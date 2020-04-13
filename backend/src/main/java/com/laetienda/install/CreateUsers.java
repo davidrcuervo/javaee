@@ -24,7 +24,7 @@ public class CreateUsers {
 		User result = ldap.findUser("sysadmin", conn);
 		if(result == null) {
 			String password = new Aes().decrypt(Settings.SYSADMIN_AES_PASS, "sysadmin");
-			result = new User("sysadmin", "SysAdmin", "SnLess", password, password, "sysadmin@la-etienda.com", conn);
+			result = new User("sysadmin", "SysAdmin", "SnLess", "sysadmin@la-etienda.com", password, password,  conn);
 			ldap.insertLdapEntity(result, conn);
 			
 			log.info("Sysadmin user has been created succesfully in ldap.");
@@ -40,8 +40,8 @@ public class CreateUsers {
 		
 		User result = ldap.findUser("manager", conn);
 		if(result == null) {
-			
-			result = new User("manager", "Manager", "SnLess", "manager", "manager", "manager@la-etienda.com", conn);
+			String password = new Aes().decrypt(Settings.MANAGER_AES_PASS, "manager");
+			result = new User("manager", "Manager", "SnLess", "manager@la-etienda.com", password, password, conn);
 			ldap.insertLdapEntity(result, conn);
 			
 			log.info("Manager user has been created succesfully in ldap.");
@@ -58,7 +58,8 @@ public class CreateUsers {
 		User result = ldap.findUser("tomcat", conn);
 		if(result == null) {
 			
-			result = new User("tomcat", "Tomcat", "SnLess", "tomcat", "tomcat", "tomcat@la-etienda.com", conn);
+			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
+			result = new User("tomcat", "Tomcat", "SnLess", "tomcat@la-etienda.com", password, password,  conn);
 			ldap.insertLdapEntity(result, conn);
 			
 			log.info("Tomcat user has been created succesfully in ldap.");

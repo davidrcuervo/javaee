@@ -21,15 +21,15 @@ public class Authorization {
 	private AuthTables tables;
 	private Ldap ldap;
 	
-	public Authorization(String username, String password) {
-		Ldap ldap = new Ldap();
+	public Authorization(String username, String password, AuthTables tables) {
 		
+		this.tables = tables;
 		ldap = new Ldap();
 		user = null;
 		conn =null;
 		
 		try {
-			Dn dn = ldap.buildDn("cn=" + username + ",ou=People," + Settings.LDAP_DOMAIN);
+			Dn dn = ldap.buildDn("uid=" + username + ",ou=People," + Settings.LDAP_DOMAIN);
 			LdapConnection temp = ldap.getLdapConnection(dn.getName(), password);
 			
 			if(temp.isConnected() && temp.isAuthenticated()) {
@@ -73,10 +73,10 @@ public class Authorization {
 	 */
 	private boolean isSysadmin(Objeto obj) throws LdapException {
 		boolean result = false;
-		Group sysadmins = ldap.findGroup("sysadmin", conn);
+		Group sysadmins = ldap.findGroup("sysadmins", conn);
 		
 		if(isAuthenticated(obj)) {
-			if(sysadmins.isMember(user, conn)) {
+			if(sysadmins != null && sysadmins.isMember(user, conn)) {
 				result = true;
 			}else if(obj.getOwner().equals(user.getUid())) {
 				result = true;

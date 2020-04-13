@@ -11,10 +11,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.laetienda.dbentities.AccessList;
 import com.laetienda.install.InstallData;
+import com.laetienda.myauth.AuthTables;
 import com.laetienda.myauth.Authorization;
 import com.laetienda.mydatabase.Db;
 import com.laetienda.myldap.Ldap;
@@ -22,45 +24,56 @@ import com.laetienda.myldap.Ldap;
 class MyAppToolsTest {
 	private final static Logger log = LogManager.getLogger();
 	
-	private static Ldap ldap;
-	private static LdapConnection conn;
-	private static Db db;
+	private Ldap ldap;
+	private Db db;
 	private static EntityManagerFactory emf;
+	private static AuthTables tables;
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
+		tables = new AuthTables();
 		EntityManager em = null;
 		InstallData installer = new InstallData();
+		Ldap ldap = new Ldap();
+		Db db = new Db();
+		LdapConnection conn = null;
+		
 		try {
-			ldap = new Ldap();
-			db = new Db();
 			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
+
 			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
 			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
 			installer.createObjects(em, conn);
 		}catch(Exception e) {
-			myCatch(e);
+			fail("Failed to start test. $exeption: "  + e.getClass().getSimpleName() + " -> " + e.getMessage());
+			log.error("Failed to start test.", e);
+		}finally {
+			ldap.closeLdapConnection(conn);
+			db.closeEm(em);
 		}
 	}
 	
 	@AfterAll
 	static void setAfterClass() {
-		ldap.closeLdapConnection(conn);
+		Db db = new Db();
 		db.closeEmf(emf);
 	}
-
-	@Test
-	void test() {
-		authentication();
+	
+	@BeforeEach
+	public void initTest() {
+		ldap = new Ldap();
+		db = new Db();
 	}
 	
-	private void authentication() {
+	@Test
+	public void authentication() {
 		
 		EntityManager em = null;
-		Authorization auth = new Authorization("manager", "manager");
 		
 		try {
+			String password = new Aes().decrypt(Settings.MANAGER_AES_PASS, "manager");
+			Authorization auth = new Authorization("manager", password, tables);
 			em = emf.createEntityManager();
 			TypedQuery<?> query = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", "manager");
 			AccessList aclManager = (AccessList)db.find(query, em, auth);
@@ -72,8 +85,8 @@ class MyAppToolsTest {
 		}
 	}
 
-	private static void myCatch(Exception e) {
-		log.error("Group test failed.", e);
-		fail("Group test failed. $exception: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
+	private void myCatch(Exception e) {
+		log.error("Application Tools test failed.", e);
+		fail("Application Tools test failed. $exception: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
 	}
 }

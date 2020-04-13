@@ -2,47 +2,66 @@ package com.laetienda.mydatabase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.security.GeneralSecurityException;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.laetienda.dbentities.AccessList;
 import com.laetienda.install.InstallData;
 import com.laetienda.myapptools.Aes;
 import com.laetienda.myapptools.Settings;
-import com.laetienda.myldap.Group;
 import com.laetienda.myldap.Ldap;
-import com.laetienda.myldap.User;
 
 class InstallTest {
 	private final static Logger log = LogManager.getLogger(InstallTest.class);
 
-	InstallData installer = new InstallData();
-	Ldap ldap;
-	Db db;
-	User sysadmin, manager, tomcat;
-	Group sysadmins, managers;
-	AccessList aclSysadmin, aclManager, aclAll, aclOwner, aclGroup;
+	private static EntityManagerFactory emf;
+	private InstallData installer;
+	private Ldap ldap;
+	private Db db;
 	
+	@BeforeAll
+	static void initEmf() {
+		Db db = new Db();
+		emf = null;
+		
+		try {
+			emf = db.createEntityManagerFactory();
+		} catch (GeneralSecurityException e) {
+			log.error("Failed to start databas connection (emf).", e);
+			fail("Failed to start databas connection (emf).");
+		}
+	}
 	
-	InstallTest(){
+	@AfterAll
+	static void closeEmf() {
+		Db db = new Db();
+		db.closeEmf(emf);
+	}
+	
+	@BeforeEach
+	public void init(){
 		ldap = new Ldap();
 		db = new Db();
+		installer = new InstallData();
 	}
 	
 	@Test
 	void install() {
 		
-		EntityManagerFactory emf = null;
 		EntityManager em =null;
 		LdapConnection conn= null;
 		
 		try {
-			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
 			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
 			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
@@ -66,6 +85,4 @@ class InstallTest {
 		int amountOfAcls = em.createNamedQuery("AccessList.findall", AccessList.class).getResultList().size();
 		assertEquals(6, amountOfAcls, "number of Access List. Check if all acls are created correctly");
 	}
-
-
 }

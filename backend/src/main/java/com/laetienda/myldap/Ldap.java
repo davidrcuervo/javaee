@@ -96,7 +96,7 @@ public class Ldap {
 				log.info("... LdapEntity has been inserted into ldap succesfully");
 			}
 		} catch (LdapException e) {
-			log.error("Failed to insert LdapEntity into ldap");
+			log.error("Failed to insert LdapEntity into ldap. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			throw e;
 		}
 	}

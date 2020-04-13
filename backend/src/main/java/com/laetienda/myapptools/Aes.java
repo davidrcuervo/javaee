@@ -159,8 +159,8 @@ public class Aes {
 	    
 //		final String USERNAME = "web";
 //		String password = "www.myself.com";
-		final String username = "sysadmin";
-		String password = "Welcome1";
+		final String username = "tomcat";
+		String password = "9LsU78NkTNEd4sKk";
 		
 		
 		//Example of hashing a password
@@ -168,7 +168,7 @@ public class Aes {
 	    String encryptedWord = new String();
 		try {
 			encryptedWord = en.encrypt(password, username);
-			System.out.println("Encrypted word is : " + encryptedWord);
+			System.out.println("Encrypted word is: " + encryptedWord);
 		} catch (Exception e) {
 			log.error("Failed to cipher text", e);
 		} 
@@ -176,11 +176,10 @@ public class Aes {
 		//Example of decipher text 
 	    Aes de =new Aes();
 	    try {
-	    	password = de.decrypt(Settings.SYSADMIN_AES_PASS, username);
+	    	password = de.decrypt(Settings.TOMCAT_AES_PASS, username);
 			System.out.println("Decrypted word is : " + password);
 		} catch (GeneralSecurityException e) {
 			log.error("failed to uncrypt text", e);
 		}
-		
-	  }
+	}
 }

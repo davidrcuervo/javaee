@@ -291,7 +291,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 			if(password == null || password.isEmpty()) {
 				addError("password", "The password can't be empty");
 			}else {
-				if(!password.equals(password2)) {
+				if(!(password.equals(password2))) {
 					addError("password", "The password and confirmation should be identical");
 				}
 				
