@@ -10,6 +10,8 @@ public final class Settings {
 	public static final int LDAP_PORT = 6363;
 	public static final String LDAP_DOMAIN = "dc=example,dc=com";
 	public static final String LDAP_ADMIN_USER = "cn=admin," + LDAP_DOMAIN;
+	public static final String LDAP_PEOPLE_DN = "ou=People," + LDAP_DOMAIN;
+	public static final String LDAP_TOMCAT_DN = "uid=tomcat," + LDAP_PEOPLE_DN;
 	public static final String LDAP_ADIN_AES_PASSWORD = "hrZPTnRKVB2XChvK54XyJwmIXdfVLynGkn2oPTOpMNqMozh1GJ3vEVGbhobjVluyj/Qi8g==";
 	public static final String SYSADMIN_AES_PASS = "IkWlRQaCxCnS5xH7ZS1Vmex1UbunOp425j4k2gsNDudeSohHe5NqKpljZsXg2cTP19PQDA==";
 	public static final String TOMCAT_AES_PASS = "7ZXPbcXMzhLKFs2HIkg+KmLjYvhc3hoUa2FrXf9+jsyvDC6AW9b5kwSc0Vb6hQSgQY2i1Gj/wQ8ucZBmZ1zwKZ3Gl9k=";

@@ -52,6 +52,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 		ldapEntry = conn.lookup(dn);
 		
 		if(ldapEntry == null) {
+			log.warn("User does not exist in ldap. $username: {}", username);
 			throw new IOException("User does not exist. $username: " + username);
 		}
 		
@@ -176,14 +177,15 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 			}else if(email.length() > 254) {
 				addError("email", "The mail can't have more than 255 charcters");
 			}else {	
-				EntryCursor search = conn.search(ldap.getPeopleLdapEntry(conn).getDn(), "(mail=" + email + ")", SearchScope.ONELEVEL);
+//				EntryCursor search = conn.search(ldap.getPeopleLdapEntry(conn).getDn(), "(mail=" + email + ")", SearchScope.ONELEVEL);
+				EntryCursor search = conn.search(ldap.buildDn(LDAP_PEOPLE_DN), "(mail=" + email + ")", SearchScope.ONELEVEL);
 			
 				if(search.iterator().hasNext()) {
 					addError("email", "This email address has already been registered");
 				}
 			}			
 		} catch (Exception e) {
-			log.warn("Failed to se email. $error: {}", e.getMessage());
+			log.warn("Failed to se email. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			addError("email", "The application were not able to find out if email has been registered");
 			throw e;
 		}

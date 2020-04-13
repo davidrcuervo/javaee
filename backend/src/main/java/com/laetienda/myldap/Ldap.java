@@ -152,7 +152,7 @@ public class Ldap {
 				log.info("... LdapEntity has been modifying succesfully");
 			}
 		} catch (LdapException e) {
-			log.error("Failed to modify LdapEntity in ldap");
+			log.error("Failed to modify LdapEntity in ldap. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			throw e;
 		}
 	}
