@@ -23,6 +23,13 @@ public class Ldap {
 	
 	private List<LdapConnection> connections = new ArrayList<LdapConnection>();
 	
+	/**
+	 * 
+	 * @param ldapUser it has to be dn string. Example: uid=user,ou=people,dc=example,dc=com
+	 * @param password
+	 * @return
+	 * @throws Exception
+	 */
 	public synchronized LdapConnection getLdapConnection(String ldapUser, String password) throws Exception {
 		log.info("Creating LdapConnection...");
 		
@@ -71,12 +78,16 @@ public class Ldap {
 	}
 	
 	/**
+	 * 
 	 * @param ldapEntity
 	 * @param conn
+	 * @return false if is not saved to the directory. It helps for testing porposes with JUnit.
 	 * @throws LdapException
 	 */
-	public void insertLdapEntity(LdapEntity ldapEntity, LdapConnection conn) throws LdapException {
+	public boolean insertLdapEntity(LdapEntity ldapEntity, LdapConnection conn) throws LdapException {
 		log.info("Inserting LdapEntity into ldap...");
+		
+		boolean result = false;
 		
 		try {
 			log.debug("LdapEntity Dn. $dn: {}", ldapEntity.getLdapEntry().getDn().getName());
@@ -94,11 +105,14 @@ public class Ldap {
 			}else {
 				conn.add(ldapEntity.getLdapEntry());
 				log.info("... LdapEntity has been inserted into ldap succesfully");
+				result = true;
 			}
 		} catch (LdapException e) {
 			log.error("Failed to insert LdapEntity into ldap. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			throw e;
 		}
+		
+		return result;
 	}
 	
 	public User findUser(String username, LdapConnection conn) {

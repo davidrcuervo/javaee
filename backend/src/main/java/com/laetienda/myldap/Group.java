@@ -63,7 +63,7 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 			Dn dn = new Dn("cn=" + groupName, "ou=groups", Settings.LDAP_DOMAIN);
 			findGroup(dn, conn);
 		} catch (LdapInvalidDnException | IOException e) {
-			log.error("Failed to create group object. $groupName: {} - $error: {}", groupName, e.getMessage());
+			log.warn("Failed to create group object. $groupName: {} - $error: {}", groupName, e.getMessage());
 			throw e;
 		}
 	}
@@ -108,6 +108,7 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 			if(conn.exists(dn)) {
 				log.warn("Failed to set Group LDAP Entry, it already exists");
 				addError("cn", "A group with this name already exists");
+				ldapEntry = conn.lookup(dn);
 			}else {
 				ldapEntry = new DefaultEntry(dn);
 				ldapEntry

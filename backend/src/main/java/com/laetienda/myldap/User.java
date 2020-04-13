@@ -121,7 +121,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 		return uid;
 	}
 	
-	public void setUid(String username, LdapConnection conn) throws Exception{
+	private void setUid(String username, LdapConnection conn) throws Exception{
 		log.info("Seting username (uid)...");
 		this.uid = username;
 		
