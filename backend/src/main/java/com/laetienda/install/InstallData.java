@@ -58,6 +58,7 @@ public class InstallData {
 		createUsers(conn);
 		createGroups(conn);
 		createAcls(em, conn);
+		createComponents(em, conn);
 		db.commit(em);
 	}
 	
@@ -88,6 +89,11 @@ public class InstallData {
 		db.insert(aclAll, em);
 		db.insert(aclOwner, em);
 		db.insert(aclGroup, em);
+	}
+	
+	private void createComponents(EntityManager em, LdapConnection conn) throws Exception {
+		Component aclsComponent = new Component("ACLs", "This component is mainly used to know who can create acls", AccessList.class, sysadmin, sysadmins, aclAll, aclAll, aclAll, em, conn );
+		db.insert(aclsComponent, em);
 	}
 	
 	@Deprecated

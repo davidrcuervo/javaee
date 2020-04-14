@@ -4,6 +4,7 @@
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<class>com.laetienda.dbentities.Objeto</class>
 		<class>com.laetienda.dbentities.AccessList</class>
+		<class>com.laetienda.dbentities.Component</class>
 		
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>

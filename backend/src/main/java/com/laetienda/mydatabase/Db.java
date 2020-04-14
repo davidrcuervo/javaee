@@ -8,22 +8,20 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Parameter;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 
-import org.apache.directory.ldap.client.api.LdapConnection;
+import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.laetienda.dbentities.AccessList;
+import com.laetienda.dbentities.Component;
 import com.laetienda.dbentities.DatabaseEntity;
 import com.laetienda.dbentities.Objeto;
 import com.laetienda.myapptools.Aes;
 import com.laetienda.myauth.Authorization;
-import com.laetienda.myldap.User;
 
 public class Db {
 	final private static Logger log = LogManager.getLogger(Db.class); 
@@ -85,23 +83,41 @@ public class Db {
 	public Objeto find(TypedQuery<?> query, EntityManager em, Authorization auth) {
 		Objeto result = null;
 		try {
-				result = (Objeto)query.getSingleResult();
-				if(auth.canRead(result)) {
-					log.debug("$user: {} -> can read $objeto: {}", auth.getUser().getUid(), result.getName());
-				}else {
-					result = null;
-				}
+			result = (Objeto)query.getSingleResult();
+			if(auth.canRead(result)) {
+				log.debug("$user: {} -> can read $objeto: {}", auth.getUser().getUid(), result.getName());
+			}else {
+				result = null;
+			}
 			
 		}catch(Exception e) {
 			log.warn("Failed to find objeto. $exception {} -> {}", e.getClass().getSimpleName(), e.getMessage());
-			log.debug("Filed to find objeto.", e);
+			log.debug("Failed to find objeto.", e);
 		}
 		
 		return result;
 	}
 	
-	public void insert(DatabaseEntity obj, EntityManager em) throws PersistenceException, IllegalArgumentException{
+	public boolean insert(DatabaseEntity obj, EntityManager em, Authorization auth) throws Exception {
+		log.debug("obj.getClass().getName(): {}", obj.getClass().getName());	
+		boolean result = false;
+		
+		Component comp = em.createNamedQuery("Component.findByJavaClassName", Component.class).setParameter("javaClassName", obj.getClass().getName()).getSingleResult();
+		
+		if(auth.canWrite(comp)) {
+			result = insert(obj, em);
+		}else {
+			log.warn("{} is not authorizes to create {}", auth.getUser().getUid(), comp.getName());
+		}
+		
+		
+		return result;
+	}
+	
+	public boolean insert(DatabaseEntity obj, EntityManager em) throws PersistenceException, IllegalArgumentException{
 		log.debug("Inserting objeto in database");
+		
+		boolean result = false;
 		try {
 			
 			if(obj.getErrors().size() > 0) {
@@ -116,12 +132,34 @@ public class Db {
 				}
 				
 				em.persist(obj);
+				result = true;
 			}
 			
 		}catch (PersistenceException | IllegalArgumentException e) {
 			log.error("Failed to persist in database. $error: {}", e.getMessage());
 			throw e;
 		}
+		
+		return result;
+	}
+	
+	public boolean remove(Objeto obj, EntityManager em, Authorization auth) throws LdapException {
+		boolean result = false;
+		if(auth.canDelete(obj)) {
+			if(em.getTransaction().isActive()) {
+				log.debug("EntityManager transaction is active");					
+			}else {
+				log.debug("Starting EntintyManager transaction");
+				em.getTransaction().begin();
+			}
+			
+			em.remove(obj);
+			result=true;
+		}else {
+			
+		}
+		
+		return result;
 	}
 	
 	public void commit(EntityManager em) throws RuntimeException{

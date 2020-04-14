@@ -68,14 +68,15 @@ public class AccessList extends Objeto implements Serializable{
 	
 	@ElementCollection
 	@CollectionTable(name="acl_users")
-	private List<String> users = new ArrayList<String>();
+	private List<String> users;
 	
 	@ElementCollection
 	@CollectionTable(name="acl_groups")
-	private List<String> groups = new ArrayList<String>();
+	private List<String> groups;
 	
 	public AccessList() {
-		
+		users = new ArrayList<String>();
+		groups = new ArrayList<String>();
 	}
 	
 	/**
@@ -100,6 +101,9 @@ public class AccessList extends Objeto implements Serializable{
 		super(owner, group, delete, write, read, conn);
 		setName(name, em);
 		setDescription(description);
+		addUser(owner, conn);
+		addGroup(group, conn);
+		
 	}
 	
 	public AccessList(
@@ -113,11 +117,23 @@ public class AccessList extends Objeto implements Serializable{
 	}
 	
 	private void setDefaultObjeto(User owner, Group group, LdapConnection conn) {
-		super.setOwner(owner, conn);
-		super.setGroup(group, conn);
+		setOwner(owner, conn);
+		setGroup(group, conn);
 		super.setDelete(this);
 		super.setWrite(this);
 		super.setRead(this);
+	}
+	
+	@Override
+	public void setOwner(User owner, LdapConnection conn) {
+		super.setOwner(owner, conn);
+		addUser(owner, conn);
+	}
+	
+	@Override
+	public void setGroup(Group group, LdapConnection conn) {
+		super.setGroup(group, conn);
+		addGroup(group, conn);
 	}
 	
 	public String getName() {
@@ -140,8 +156,7 @@ public class AccessList extends Objeto implements Serializable{
 			}else {
 			
 				List<AccessList> result = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", name).getResultList();
-				log.debug("Number of ACLs found with same name: {}", result.size());
-				
+								
 				if(result.size() > 0) {
 					log.warn("Failed to set Access List, there is an Access List using the same name");
 					addError("Access Control List", "There is an Access List using the same name");
@@ -181,17 +196,37 @@ public class AccessList extends Objeto implements Serializable{
 	}
 	
 	public void addUser(User user, LdapConnection conn) {
-		users.add(user.getUid());
+		
+		if(users == null) {
+			log.debug("users variable has not been initialized");
+			users = new ArrayList<String>();
+		}
 		
 		try {
 			if(conn.exists(user.getLdapEntry().getDn())) {
-				//TODO validate user does exist already in acl
+				if(users.contains(user.getUid())){
+					log.debug("{} already exists in acl {}", user.getUid(), getName());
+				}else {
+					users.add(user.getUid());
+					log.debug("{} has been added succesfully to acl {}", user.getUid(), getName());
+				}
 			}else {
-				addError("user", "User does not exist.");
+				addError("user", "User does not exist in ldap directory");
 			}
 		} catch (LdapException e) {
 			addError("user", "Failed to add user.");
 			log.debug("Failed to insert user in access list", e);
+		}
+	}
+	
+	public void removeUser(User user) {
+		if(user.getUid().equals(getOwner())){
+			addError("User", "User can't be removed because it is the owner of the acl");
+			log.warn("User, {}, can't be removed because it is the owner of the acl", user.getUid());
+		}else if(users.contains(user.getUid())) {
+			users.remove(user.getUid());
+		}else {
+			log.warn("User, {}, can't be removed because does not exist in the acl.", user.getUid());
 		}
 	}
 	
@@ -202,9 +237,20 @@ public class AccessList extends Objeto implements Serializable{
 	
 //	public void addGroup(Group group, EntityManager em, LdapConnection conn) {
 	public void addGroup(Group group, LdapConnection conn) {	
+		if(groups == null) {
+			log.debug("groups variable has not been initialized");
+			groups = new ArrayList<String>();
+		}
+		
+		
 		try {
 			if(conn.exists(group.getLdapEntry().getDn())) {
-				//TODO validate group does exist already in acl
+				if(groups.contains(group.getGroupName())) {
+					log.debug("{} group already exists in acl {}", group.getGroupName(), getName());
+				}else {
+					groups.add(group.getGroupName());
+					log.debug("{} group has been added succesfully to acl: {}", group.getGroupName(), getName());
+				}
 			}else {
 				addError("group", "User does not exist.");
 			}
@@ -212,7 +258,17 @@ public class AccessList extends Objeto implements Serializable{
 			addError("group", "Failed to add user.");
 			log.debug("Failed to insert group in access list", e);
 		}
-		groups.add(group.getGroupName());
+	}
+	
+	public void removeGroup(Group group) {
+		if(group.getGroupName().equals(getGroup())){
+			addError("Group", "Group can't be removed because it is the owner of the acl. $group: " + group.getGroupName());
+			log.warn("User, {}, can't be removed because it is the owner of the acl: {}", group.getGroupName(), getName());
+		}else if(groups.contains(group.getGroupName())) {
+			groups.remove(group.getGroupName());
+		}else {
+			log.warn("Group, {}, can't be removed because does not exist in the acl: {}", group.getGroupName(), getName());
+		}
 	}
 	
 	public boolean isAuthorized(User user, LdapConnection conn){

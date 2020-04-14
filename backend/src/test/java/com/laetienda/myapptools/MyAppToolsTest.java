@@ -10,6 +10,7 @@ import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ class MyAppToolsTest {
 	
 	private Ldap ldap;
 	private Db db;
+	private LdapConnection conn;
+	private EntityManager em;
 	private static EntityManagerFactory emf;
 	private static AuthTables tables;
 
@@ -64,6 +67,19 @@ class MyAppToolsTest {
 	public void initTest() {
 		ldap = new Ldap();
 		db = new Db();
+		try {
+			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
+			em = emf.createEntityManager();
+			conn = ldap.getLdapConnection("tomcat", password);
+		} catch (Exception e) {
+			myCatch(e);;
+		}
+	}
+	
+	@AfterEach
+	public void closeConnections() {
+		ldap.closeLdapConnection(conn);
+		db.closeEm(em);
 	}
 	
 	@Test

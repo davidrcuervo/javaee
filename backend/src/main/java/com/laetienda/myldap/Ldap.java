@@ -115,6 +115,12 @@ public class Ldap {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param username must use simple username (only uid), do not use complete dn.
+	 * @param conn Use tomcat connection otherwise it will not be able to find other users using same name or same email address
+	 * @return
+	 */
 	public User findUser(String username, LdapConnection conn) {
 		log.info("Searching user in ldap. $useranme: {}", username);
 		
@@ -129,6 +135,12 @@ public class Ldap {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param group Use simple name of group (only cn), do not use complete dn string
+	 * @param conn Use tomcat connection, otherwise it will not be able to find other groups with same name
+	 * @return
+	 */
 	public Group findGroup(String group, LdapConnection conn) {
 		log.info("Searching group in ldap. $groupname: {}", group);
 		
@@ -136,8 +148,8 @@ public class Ldap {
 		try {
 			result = new Group(group, conn);
 		} catch (Exception e) {
-			log.warn("Group does not exist in ldap. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
-			log.debug("Group does no exist in ldap.", e);
+			log.warn("Group was not found. Check if it exists and if user has rights to read it. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
+			log.debug("Group was not found. Check if it exists and if user has rights to read it.", e);
 		}
 		
 		return result;
