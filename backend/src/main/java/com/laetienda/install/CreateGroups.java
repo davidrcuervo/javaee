@@ -3,10 +3,10 @@ package com.laetienda.install;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.laetienda.engine.Ldap;
 
 import com.laetienda.myapptools.MyAppTools;
 import com.laetienda.myldap.Group;
-import com.laetienda.myldap.Ldap;
 import com.laetienda.myldap.User;
 
 public class CreateGroups {

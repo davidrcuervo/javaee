@@ -14,13 +14,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.laetienda.engine.Aes;
+import org.laetienda.engine.Authorization;
+import org.laetienda.engine.Db;
+import org.laetienda.engine.Ldap;
 
-import com.laetienda.dbentities.AccessList;
 import com.laetienda.install.InstallData;
+import com.laetienda.model.AccessList;
 import com.laetienda.myauth.AuthTables;
-import com.laetienda.myauth.Authorization;
-import com.laetienda.mydatabase.Db;
-import com.laetienda.myldap.Ldap;
 
 class MyAppToolsTest {
 	private final static Logger log = LogManager.getLogger();
@@ -47,7 +48,7 @@ class MyAppToolsTest {
 			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
 			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
-			installer.createObjects(em, conn);
+			installer.createObjects(em, conn, new Authorization(conn));
 		}catch(Exception e) {
 			fail("Failed to start test. $exeption: "  + e.getClass().getSimpleName() + " -> " + e.getMessage());
 			log.error("Failed to start test.", e);

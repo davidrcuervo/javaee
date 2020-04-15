@@ -1,4 +1,4 @@
-package com.laetienda.myldap;
+package org.laetienda.engine;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +15,10 @@ import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.laetienda.myldap.Group;
+import com.laetienda.myldap.LdapEntity;
+import com.laetienda.myldap.User;
 
 import static com.laetienda.myapptools.Settings.*;
 

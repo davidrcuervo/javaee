@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.laetienda.engine.Ldap;
 
 import com.laetienda.myapptools.FormBeanInterface;
 import com.laetienda.myapptools.MyAppTools;
@@ -84,7 +85,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
  * @throws Exception
  */
 //	public User(String username, String name, String lastname, String email, LdapConnection conn, EntityManager em) throws Exception {
-	public User(String username, String name, String lastname, String email, String pass1, String pass2, LdapConnection conn) throws Exception {	
+	public User(String username, String name, String lastname, String email, String pass1, String pass2, LdapConnection conn) {	
 		ldap = new Ldap();
 		tools = new MyAppTools();
 		
@@ -121,7 +122,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 		return uid;
 	}
 	
-	private void setUid(String username, LdapConnection conn) throws Exception{
+	private void setUid(String username, LdapConnection conn){
 		log.info("Seting username (uid)...");
 		this.uid = username;
 		
@@ -146,9 +147,9 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 				log.info("... username (uid) has been set succesfully");
 			}
 		}catch(Exception e) {
-			log.warn("Failed to set username (uid). $error: {}", e.getMessage());
 			addError("uid", "Internal error");
-			throw e;
+			log.warn("Failed to set username (uid). $error: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
+			log.debug("Failed to set username. $uid: {}", username, e);
 		}
 	}
 	
@@ -161,7 +162,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 		}
 	}
 	
-	public void setEmail(String email, LdapConnection conn) throws Exception {
+	public void setEmail(String email, LdapConnection conn) {
 		
 		try {
 			
@@ -185,9 +186,9 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 				}
 			}			
 		} catch (Exception e) {
-			log.warn("Failed to se email. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			addError("email", "The application were not able to find out if email has been registered");
-			throw e;
+			log.warn("Failed to se email. $email: {} - $exception: {} -> {}", email, e.getClass().getSimpleName(), e.getMessage());
+			log.debug("Failed to se email. $email: {}", email);
 		}
 	}
 

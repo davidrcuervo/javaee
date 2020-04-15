@@ -1,4 +1,4 @@
-package com.laetienda.dbentities;
+package com.laetienda.model;
 
 import java.io.Serializable;
 //import java.text.SimpleDateFormat;

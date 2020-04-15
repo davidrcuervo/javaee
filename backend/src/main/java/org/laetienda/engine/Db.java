@@ -1,4 +1,4 @@
-package com.laetienda.mydatabase;
+package org.laetienda.engine;
 
 import static com.laetienda.myapptools.Settings.*;
 
@@ -17,11 +17,9 @@ import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.laetienda.dbentities.Component;
-import com.laetienda.dbentities.DatabaseEntity;
-import com.laetienda.dbentities.Objeto;
-import com.laetienda.myapptools.Aes;
-import com.laetienda.myauth.Authorization;
+import com.laetienda.model.Component;
+import com.laetienda.model.DatabaseEntity;
+import com.laetienda.model.Objeto;
 
 public class Db {
 	final private static Logger log = LogManager.getLogger(Db.class); 
@@ -114,7 +112,7 @@ public class Db {
 		return result;
 	}
 	
-	public boolean insert(DatabaseEntity obj, EntityManager em) throws PersistenceException, IllegalArgumentException{
+	private boolean insert(DatabaseEntity obj, EntityManager em) throws PersistenceException, IllegalArgumentException{
 		log.debug("Inserting objeto in database");
 		
 		boolean result = false;
@@ -162,7 +160,7 @@ public class Db {
 		return result;
 	}
 	
-	public void commit(EntityManager em) throws RuntimeException{
+	public void commit(EntityManager em, Authorization auth) throws RuntimeException{
 		try {
 			em.getTransaction().commit();
 		}catch(RollbackException e) {

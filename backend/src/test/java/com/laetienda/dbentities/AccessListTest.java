@@ -15,15 +15,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.laetienda.engine.Aes;
+import org.laetienda.engine.Authorization;
+import org.laetienda.engine.Db;
+import org.laetienda.engine.Ldap;
 
 import com.laetienda.install.InstallData;
-import com.laetienda.myapptools.Aes;
+import com.laetienda.model.AccessList;
+import com.laetienda.myapptools.AppContext;
 import com.laetienda.myapptools.Settings;
 import com.laetienda.myauth.AuthTables;
-import com.laetienda.myauth.Authorization;
-import com.laetienda.mydatabase.Db;
 import com.laetienda.myldap.Group;
-import com.laetienda.myldap.Ldap;
 import com.laetienda.myldap.User;
 
 class AccessListTest {
@@ -50,14 +52,17 @@ class AccessListTest {
 		tables = new AuthTables();
 		InstallData installer = new InstallData();
 		EntityManager em = null;
+		AppContext appCtx = new AppContext();
 		
 		try {
 			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
 			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
 			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
-			installer.createObjects(em, conn);
+			installer.createObjects(em, conn, new Authorization(conn));
 			Authorization.setACL_ALL_ID(em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", "all").getSingleResult().getId());
+			appCtx.putCtxObject("emf", emf);
+			appCtx.putCtxObject("aclTables", tables);
 		} catch (Exception e) {
 			log.error("User Test failed.", e);
 			fail("User Test failed. $exception: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
@@ -111,7 +116,7 @@ class AccessListTest {
 		try {
 			assertNull(db.find(query, em, auth), "At this point the accesslist should not be created yet.");
 			assertTrue(db.insert(aclTest, em, auth));
-			db.commit(em);
+			db.commit(em, auth);
 			assertNotNull(db.find(query, em, auth), "The acl should have been created.");
 			assertTrue(aclTest.isAuthorized(aclUser, conn));
 		} catch (Exception e) {
@@ -127,7 +132,7 @@ class AccessListTest {
 			assertNotNull(acl, "It didn't find the access list");
 			assertFalse(acl.isAuthorized(aclMember, conn), "Member must not be authorized yet.");
 			acl.addUser(aclMember, conn);
-			db.commit(em);
+			db.commit(em, auth);
 			acl2 = (AccessList)db.find(query, em, auth);
 			assertTrue(acl2.isAuthorized(aclMember, conn), "Member was not added to the acl");
 		}catch(Exception e) {
@@ -143,7 +148,7 @@ class AccessListTest {
 		try {
 			db.begin(em);
 			assertTrue(db.remove(acl, em, auth));
-			db.commit(em);
+			db.commit(em, auth);
 			
 			assertNull((AccessList)db.find(query, em, auth));
 		} catch (Exception e) {

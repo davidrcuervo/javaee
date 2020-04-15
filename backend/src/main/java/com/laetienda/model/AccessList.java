@@ -1,4 +1,4 @@
-package com.laetienda.dbentities;
+package com.laetienda.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -7,9 +7,10 @@ import java.util.List;
 import javax.persistence.*;
 
 import org.apache.logging.log4j.Logger;
+import org.laetienda.engine.Ldap;
 
+import com.laetienda.myapptools.FormBeanInterface;
 import com.laetienda.myldap.Group;
-import com.laetienda.myldap.Ldap;
 import com.laetienda.myldap.User;
 
 import org.apache.directory.api.ldap.model.exception.LdapException;
@@ -21,42 +22,9 @@ import org.apache.logging.log4j.LogManager;
 @NamedQueries({
 	@NamedQuery(name="AccessList.findall", query="SELECT acl FROM AccessList acl"),
 	@NamedQuery(name="AccessList.findByName", query="SELECT acl FROM AccessList acl WHERE acl.name = :name")
-//	@NamedQuery(
-//			name="AccessList.findUsers", 
-//			query="SELECT u1 FROM AccessList acl "
-//					+ "JOIN acl.users aclu "
-//					+ "JOIN aclu.user u1 "
-//					+ "WHERE acl = :acl "
-//					+ "UNION "
-//					+ "SELECT u2 FROM AccessList acl "
-//					+ "JOIN acl.groups aclg "
-//					+ "JOIN aclg.group g "
-//					+ "JOIN g.users u2 "
-//					+ "WHERE acl = :acl"
-//				),
-//	@NamedQuery(
-//			name="AccessList.findUserInAcl", 
-//			query="SELECT acl FROM AccessList acl "
-//					+ "JOIN acl.groups aclg "
-//					+ "JOIN aclg.group g "
-//					+ "JOIN g.users u2 "
-//					+ "JOIN acl.users aclu  "
-//					+ "JOIN aclu.user u1 "
-//					+ "WHERE acl = :acl AND (u1 = :user OR u2 = :user)"
-//			),
-//	@NamedQuery(
-//			name="AccessList.findAclsByUser", 
-//			query="SELECT acl FROM AccessList acl "
-//					+ "JOIN acl.groups aclg "
-//					+ "JOIN aclg.group g "
-//					+ "JOIN g.users u2 "
-//					+ "JOIN acl.users aclu "
-//					+ "JOIN aclu.user u1 "
-//					+ "WHERE u1 = :user OR u2 = :user"
-//			)
 })
 
-public class AccessList extends Objeto implements Serializable{
+public class AccessList extends Objeto implements FormBeanInterface, Serializable{
 	private static final long serialVersionUID = 1L;
 	private static Logger log = LogManager.getLogger(AccessList.class);
 	

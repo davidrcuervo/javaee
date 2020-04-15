@@ -1,4 +1,4 @@
-package com.laetienda.myauth;
+package org.laetienda.engine;
 
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.name.Dn;
@@ -6,11 +6,11 @@ import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.laetienda.dbentities.AccessList;
-import com.laetienda.dbentities.Objeto;
+import com.laetienda.model.AccessList;
+import com.laetienda.model.Objeto;
 import com.laetienda.myapptools.Settings;
+import com.laetienda.myauth.AuthTables;
 import com.laetienda.myldap.Group;
-import com.laetienda.myldap.Ldap;
 import com.laetienda.myldap.User;
 
 public class Authorization {
@@ -22,6 +22,7 @@ public class Authorization {
 	private LdapConnection conn;
 	private AuthTables tables;
 	private Ldap ldap;
+	private boolean installFlag;
 
 	/**
 	 * 
@@ -35,6 +36,7 @@ public class Authorization {
 		ldap = new Ldap();
 		user = null;
 		conn =null;
+		installFlag = false;
 		
 		try {
 			Dn dn = ldap.buildDn("uid=" + username + ",ou=People," + Settings.LDAP_DOMAIN);
@@ -49,6 +51,11 @@ public class Authorization {
 			log.warn("Failed to authenticate user. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			log.debug("Failed to authenticate user.", e);
 		}
+	}
+	
+	public Authorization(LdapConnection conn) {
+		installFlag = true;
+		this.conn = conn;
 	}
 	
 	public boolean canDelete(Objeto obj) throws LdapException {
@@ -76,7 +83,7 @@ public class Authorization {
 		boolean result = false;
 		
 		if(isAuthenticated(obj)) {
-			if(tables.isInReadTable(obj.getId(), user.getUid())) {
+			if(user != null && tables.isInReadTable(obj.getId(), user.getUid())) {
 				result = true;
 				log.debug("{} is authorized in write table for object.", user.getUid(), obj.getName());
 			}else {
@@ -125,10 +132,13 @@ public class Authorization {
 		Group sysadmins = ldap.findGroup("sysadmins", conn);
 		
 		if(isAuthenticated(obj)) {
-			if(sysadmins != null && sysadmins.isMember(user, conn)) {
+			if(installFlag) {
+				result = true;
+				log.debug("User has been authorized because installation flag is up");
+			}else if(sysadmins != null && sysadmins.isMember(user, conn)) {
 				result = true;
 				log.debug("User is authorized because belongs to sysadmin group. $username: {}", user.getUid());
-			}else if(obj.getOwner().equals(user.getUid())) {
+			}else if(user != null && obj.getOwner().equals(user.getUid())) {
 				result = true;
 				log.debug("User is authorized because because he/she is the owner of the objeto. $username: {} -> $objectName: {}", user.getUid(), obj.getName());
 			}else if(acl.getId() == ACL_ALL_ID) {
@@ -163,6 +173,10 @@ public class Authorization {
 
 	public LdapConnection getConn() {
 		return conn;
+	}
+	
+	public void setConn(LdapConnection conn) {
+		this.conn = conn;
 	}
 	
 	public static void setACL_ALL_ID(int aCL_ALL_ID) {

@@ -7,5 +7,4 @@ public interface FormBeanInterface {
 	
 	public void addError(String list, String error);
 	public HashMap<String, List<String>> getErrors();
-
 }

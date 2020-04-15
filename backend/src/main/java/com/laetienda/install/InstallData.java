@@ -4,15 +4,16 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import org.apache.logging.log4j.Logger;
+import org.laetienda.engine.Aes;
+import org.laetienda.engine.Authorization;
+import org.laetienda.engine.Db;
+import org.laetienda.engine.Ldap;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 
-import com.laetienda.dbentities.*;
-import com.laetienda.myapptools.Aes;
+import com.laetienda.model.*;
 import com.laetienda.myapptools.Settings;
-import com.laetienda.mydatabase.Db;
 import com.laetienda.myldap.Group;
-import com.laetienda.myldap.Ldap;
 import com.laetienda.myldap.User;
 
 public class InstallData {
@@ -29,37 +30,37 @@ public class InstallData {
 		ldap = new Ldap();
 	}
 	
-	public void run() {
-		
-		EntityManagerFactory emf = null;
-		LdapConnection conn = null;
-		EntityManager em = null;
-		
-		try {
-			emf = db.createEntityManagerFactory();	
-			em = emf.createEntityManager();
-			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
-			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
-			
-			createObjects(em, conn);
-			
-			log.info("Database has installed succesfully");
-		} catch (Exception ex) {
-			log.error("Failed to insert data in app.", ex);
-		} finally {
-			
-			db.closeEm(em);
-			db.closeEmf(emf);
-			ldap.closeLdapConnection(conn);
-		}
-	}
+//	public void run() {
+//		
+//		EntityManagerFactory emf = null;
+//		LdapConnection conn = null;
+//		EntityManager em = null;
+//		
+//		try {
+//			emf = db.createEntityManagerFactory();	
+//			em = emf.createEntityManager();
+//			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
+//			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
+//			createObjects(em, conn, auth);
+//			
+//			log.info("Database has installed succesfully");
+//		} catch (Exception ex) {
+//			log.error("Failed to insert data in app.", ex);
+//		} finally {
+//			
+//			db.closeEm(em);
+//			db.closeEmf(emf);
+//			ldap.closeLdapConnection(conn);
+//		}
+//	}
 	
-	public void createObjects(EntityManager em, LdapConnection conn) throws Exception {
+	public void createObjects(EntityManager em, LdapConnection conn, Authorization auth) throws Exception {
+
 		createUsers(conn);
 		createGroups(conn);
-		createAcls(em, conn);
-		createComponents(em, conn);
-		db.commit(em);
+		createAcls(em, conn, auth);
+		createComponents(em, conn, auth);
+		db.commit(em, auth);
 	}
 	
 	private void createUsers(LdapConnection conn) throws Exception {
@@ -75,7 +76,7 @@ public class InstallData {
 		managers = groups.createManagers(conn);
 	}
 	
-	private void createAcls(EntityManager em, LdapConnection conn) throws Exception {
+	private void createAcls(EntityManager em, LdapConnection conn, Authorization auth) throws Exception {
 
 		CreateAcls acls = new CreateAcls(conn);
 		aclSysadmin = acls.createSysadminAcl(em, conn);
@@ -84,16 +85,16 @@ public class InstallData {
 		aclOwner = acls.createOwnerAcl(em, conn);
 		aclGroup = acls.createGroupAcl(em, conn);
 		
-		db.insert(aclSysadmin, em);
-		db.insert(aclManager, em);
-		db.insert(aclAll, em);
-		db.insert(aclOwner, em);
-		db.insert(aclGroup, em);
+		db.insert(aclSysadmin, em, auth);
+		db.insert(aclManager, em, auth);
+		db.insert(aclAll, em, auth);
+		db.insert(aclOwner, em, auth);
+		db.insert(aclGroup, em, auth);
 	}
 	
-	private void createComponents(EntityManager em, LdapConnection conn) throws Exception {
+	private void createComponents(EntityManager em, LdapConnection conn, Authorization auth) throws Exception {
 		Component aclsComponent = new Component("ACLs", "This component is mainly used to know who can create acls", AccessList.class, sysadmin, sysadmins, aclAll, aclAll, aclAll, em, conn );
-		db.insert(aclsComponent, em);
+		db.insert(aclsComponent, em, auth);
 	}
 	
 	@Deprecated
@@ -111,15 +112,5 @@ public class InstallData {
 		Form form = new Form("group", "com.laetienda.entities.Group", "/WEB-INF/jsp/email/signup.jsp", "/WEB-INF/jsp/thankyou/signup.jsp", aclManager);
 		form.addInput(new Input(form, "name", "Group Name", "string", "Insert the group name", "glyphicon-user", true));
 		form.addInput(new Input(form, "description", "Description", "string", "Insert description of the group", "glyphicon-user", true));
-	}
-	
-	public static void main(String[] args){
-		
-		log.info("Starting InstallData class...");
-		
-		InstallData installer = new InstallData();
-		installer.run();
-		
-		log.info("... test has finished.... GOOD BYE!!!");
 	}
 }

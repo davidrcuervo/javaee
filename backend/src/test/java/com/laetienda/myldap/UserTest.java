@@ -15,11 +15,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.laetienda.engine.Aes;
+import org.laetienda.engine.Authorization;
+import org.laetienda.engine.Db;
+import org.laetienda.engine.Ldap;
 
 import com.laetienda.install.InstallData;
-import com.laetienda.myapptools.Aes;
 import com.laetienda.myapptools.Settings;
-import com.laetienda.mydatabase.Db;
 
 class UserTest {
 	private final static Logger log = LogManager.getLogger(UserTest.class);
@@ -44,7 +46,7 @@ class UserTest {
 			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
 			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
-			installer.createObjects(em, conn);
+			installer.createObjects(em, conn, new Authorization(conn));
 		} catch (Exception e) {
 			log.error("User Test failed.", e);
 			fail("User Test failed. $exception: " + e.getClass().getSimpleName() + " -> " + e.getMessage());

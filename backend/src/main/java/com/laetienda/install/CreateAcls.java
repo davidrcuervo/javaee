@@ -3,9 +3,9 @@ package com.laetienda.install;
 import javax.persistence.EntityManager;
 
 import org.apache.directory.ldap.client.api.LdapConnection;
+import org.laetienda.engine.Db;
 
-import com.laetienda.dbentities.AccessList;
-import com.laetienda.mydatabase.Db;
+import com.laetienda.model.AccessList;
 import com.laetienda.myldap.Group;
 import com.laetienda.myldap.User;
 

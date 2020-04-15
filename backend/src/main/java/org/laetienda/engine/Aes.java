@@ -1,4 +1,4 @@
-package com.laetienda.myapptools;
+package org.laetienda.engine;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -21,6 +21,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.laetienda.myapptools.Settings;
 
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;

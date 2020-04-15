@@ -14,12 +14,15 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.laetienda.engine.Aes;
+import org.laetienda.engine.Authorization;
+import org.laetienda.engine.Db;
+import org.laetienda.engine.Ldap;
 
-import com.laetienda.dbentities.AccessList;
 import com.laetienda.install.InstallData;
-import com.laetienda.myapptools.Aes;
+import com.laetienda.model.AccessList;
 import com.laetienda.myapptools.Settings;
-import com.laetienda.myldap.Ldap;
+import com.laetienda.myauth.AuthTables;
 
 class InstallTest {
 	private final static Logger log = LogManager.getLogger(InstallTest.class);
@@ -28,6 +31,7 @@ class InstallTest {
 	private InstallData installer;
 	private Ldap ldap;
 	private Db db;
+	private Authorization auth;
 	
 	@BeforeAll
 	static void initEmf() {
@@ -65,8 +69,8 @@ class InstallTest {
 			em = emf.createEntityManager();
 			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
 			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
-			
-			installer.createObjects(em, conn);
+			auth = new Authorization(conn);
+			installer.createObjects(em, conn, auth);
 			testAcls(em, conn);
 			
 			

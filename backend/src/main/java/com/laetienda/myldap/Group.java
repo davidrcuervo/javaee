@@ -18,6 +18,7 @@ import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.laetienda.engine.Ldap;
 
 import com.laetienda.myapptools.FormBeanInterface;
 import com.laetienda.myapptools.MyAppTools;
