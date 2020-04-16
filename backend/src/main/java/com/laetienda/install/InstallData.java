@@ -59,7 +59,6 @@ public class InstallData {
 		createUsers(conn);
 		createGroups(conn);
 		createAcls(em, conn, auth);
-		createComponents(em, conn, auth);
 		db.commit(em, auth);
 	}
 	
@@ -84,17 +83,14 @@ public class InstallData {
 		aclAll = acls.createAllAcl(em, conn);
 		aclOwner = acls.createOwnerAcl(em, conn);
 		aclGroup = acls.createGroupAcl(em, conn);
+		Component aclsComponent = new Component("ACLs", "This component is mainly used to know who can create acls", AccessList.class, sysadmin, sysadmins, aclAll, aclAll, aclAll, em, conn );
 		
+		db.insert(aclsComponent, em, auth);
 		db.insert(aclSysadmin, em, auth);
 		db.insert(aclManager, em, auth);
 		db.insert(aclAll, em, auth);
 		db.insert(aclOwner, em, auth);
 		db.insert(aclGroup, em, auth);
-	}
-	
-	private void createComponents(EntityManager em, LdapConnection conn, Authorization auth) throws Exception {
-		Component aclsComponent = new Component("ACLs", "This component is mainly used to know who can create acls", AccessList.class, sysadmin, sysadmins, aclAll, aclAll, aclAll, em, conn );
-		db.insert(aclsComponent, em, auth);
 	}
 	
 	@Deprecated

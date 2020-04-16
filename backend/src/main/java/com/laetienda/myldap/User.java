@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.laetienda.engine.Ldap;
@@ -383,13 +384,32 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 		modifications = new ArrayList<Modification>();
 	}
 
+	public String getJson() {
+		
+		String result = "{";
+		result += "\"uid\": \"" + getUid() + "\",";
+		result += "\"cn\": \"" + getLdapEntry().get("cn").get() + "\",";
+		result += "\"sn\": \"" + getLdapEntry().get("sn").get() + "\",";
+		result += "\"mail\": \"" + getLdapEntry().get("mail").get() + "\"";
+		
+		if(getErrors().size() > 0) {
+			result += ",{";
+			for(Map.Entry<String, List<String>> entry : getErrors().entrySet()) {
+				result += "\""+ entry.getKey() + "\": {";
+				for(String error : entry.getValue()) {
+					result += "\""+ error + "\",";
+				}
+				result += "},";
+			}
+			result += "}";
+		}
+		result += "}";
+		
+		return result;
+	}
+
 	@Override
 	public void reloadLdapEntry(LdapConnection conn) throws LdapException {
-		
-		Dn temp = ldapEntry.getDn();
-		
-		if(conn.exists(temp)) {
-			ldapEntry = conn.lookup(temp);
-		}		
+		ldapEntry = conn.lookup(getLdapEntry().getDn());
 	}
 }

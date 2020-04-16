@@ -4,6 +4,7 @@ import static com.laetienda.myapptools.Settings.*;
 
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -100,9 +101,15 @@ public class Db {
 		log.debug("obj.getClass().getName(): {}", obj.getClass().getName());	
 		boolean result = false;
 		
-		Component comp = em.createNamedQuery("Component.findByJavaClassName", Component.class).setParameter("javaClassName", obj.getClass().getName()).getSingleResult();
 		
-		if(auth.canWrite(comp)) {
+		List<Component> comps = em.createNamedQuery("Component.findByJavaClassName", Component.class).setParameter("javaClassName", obj.getClass().getName()).getResultList();
+		Component comp = null;
+		
+		if(comps.size() == 1) {
+			comp = comps.get(0);
+		}
+		
+		if(auth.isInstallFlag() || auth.canWrite(comp)) {
 			result = insert(obj, em);
 		}else {
 			log.warn("{} is not authorizes to create {}", auth.getUser().getUid(), comp.getName());

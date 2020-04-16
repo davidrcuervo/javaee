@@ -257,34 +257,4 @@ public class AccessList extends Objeto implements FormBeanInterface, Serializabl
 		
 		return result;
 	}
-	
-	public static void main(String[] args) {
-		log.info("Hello " + AccessList.class.getName() + "!!!.");
-		
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory("org.laetienda.database");
-		AccessList result = null;
-		List<String> result2 = new ArrayList<String>();
-		EntityManager em = emf.createEntityManager();
-		try {
-
-			AccessList acl = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", "managers").getSingleResult();
-			String user = em.createNamedQuery("User.findByUid", String.class).setParameter("uid", "manager").getSingleResult();
-			result = em.createNamedQuery("AccessList.findUserInAcl", AccessList.class).setParameter("user", user).setParameter("acl", acl).getSingleResult();
-			result2 = em.createNamedQuery("AccessList.findUsers", String.class).setParameter("acl", acl).getResultList();
-		}catch( NoResultException | NonUniqueResultException e) {
-			log.info("No result found", e);
-		}finally{
-			em.close();
-			emf.close();
-		}
-		
-		log.info("RESULT1: " + (result != null ? result.getName() : "No access"));
-		
-		log.info("RESULT2: ");
-		for(String username : result2) {
-			log.info(username);
-		}
-		
-		log.info("GAME OVER!!!");
-	}
 }

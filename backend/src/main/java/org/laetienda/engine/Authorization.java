@@ -167,6 +167,11 @@ public class Authorization {
 		return result;
 	}
 	
+	protected boolean isInstallFlag() {
+		return installFlag;
+	}
+
+	
 	public User getUser() {
 		return user;
 	}

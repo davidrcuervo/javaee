@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="3.1"   xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee                       http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+<display-name>Backend</display-name>
+ 
+<servlet>
+	<servlet-name>user</servlet-name>
+	<servlet-class>com.laetienda.controller.UserController</servlet-class>
+</servlet>
+<servlet-mapping>
+	<servlet-name>user</servlet-name>
+	<url-pattern>/user/*</url-pattern>
+</servlet-mapping>
+
+<listener>
+	<listener-class>com.laetienda.tomcat.Load</listener-class>
+</listener>
+
+<filter>
+	<filter-name>pathParts</filter-name>
+	<filter-class>com.laetienda.tomcat.FilterPath</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>pathParts</filter-name>
+	<url-pattern>/user/*</url-pattern>
+</filter-mapping>
+<context-param>
+	<param-name>db.port</param-name>
+	<param-value>5432</param-value>
+</context-param>
+<context-param>
+	<param-name>hostname</param-name>
+	<param-value>localhost</param-value>
+</context-param>
+<context-param>
+	<param-name>db.username</param-name>
+	<param-value>web</param-value>
+</context-param>
+<context-param>
+	<param-name>db.aes.password</param-name>
+	<param-value>AI3DvVEl1RuUNzvewBLBPRFfcTZJQ5MGKIiML8nNDJMyBrthg0bHAyLQNetFhx3IUk1O+A==</param-value>
+</context-param>
+<context-param>
+	<param-name>db.persistence.unit.name</param-name>
+	<param-value>com.laetienda.database</param-value>
+</context-param>
+
+</web-app>

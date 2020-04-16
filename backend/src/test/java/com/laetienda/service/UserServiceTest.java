@@ -39,10 +39,10 @@ class UserServiceTest {
 	}
 
 	private void deleteUser() {
-		User user = service.findByUsername(Settings.LDAP_TOMCAT_DN, password, "testuser");
+		User user = service.findByUsername("tomcat", password, "testuser");
 		assertNotNull(user);		
-		assertTrue(service.delete(Settings.LDAP_TOMCAT_DN, password, user));
-		assertNull(service.findByUsername(Settings.LDAP_TOMCAT_DN, password, "testuser"));
+		assertTrue(service.delete("tomcat", password, "testuser"));
+		assertNull(service.findByUsername("tomcat", password, "testuser"));
 		
 	}
 

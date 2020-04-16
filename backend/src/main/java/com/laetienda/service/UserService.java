@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.laetienda.engine.Ldap;
 
+import com.laetienda.myapptools.Settings;
 import com.laetienda.myldap.User;
 import com.laetienda.repository.UserRepository;
 
@@ -46,7 +47,7 @@ public class UserService implements UserRepository {
 		LdapConnection conn = null;
 		
 		try {
-			conn = ldap.getLdapConnection(username, password);
+			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
 			result = ldap.findUser(uid, conn);
 		}catch (Exception e) {
 			log.warn("Failed to find user from directory. $uid: {} - $exception: {} -> {}", uid, e.getClass().getSimpleName(), e.getMessage());
@@ -65,12 +66,12 @@ public class UserService implements UserRepository {
 		LdapConnection conn = null;
 		
 		try {
-			conn = ldap.getLdapConnection(username, password);
+			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
 			result = new User(newUsername, name, lastname, email, pass1, pass2, conn);
 			ldap.insertLdapEntity(result, conn);
 
 		}catch (Exception e) {
-//			result.addError("User", "Internal error while saving in ldap direcotry");
+			if(result != null)result.addError("User", "Internal error while saving in ldap direcotry");
 			log.warn("Failed to add user into directory. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			log.debug("Failed to add user into directory.", e);
 		}finally {
@@ -81,18 +82,18 @@ public class UserService implements UserRepository {
 	}
 
 	@Override
-	public boolean delete(String username, String password, User user) {
+	public boolean delete(String username, String password, String uid) {
 		boolean result = false;
-		String uid = user.getUid();
 		LdapConnection conn = null;
-		
+		User user = null;
 		try {
-			conn = ldap.getLdapConnection(username, password);
+			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
+			user = ldap.findUser(uid, conn);
 			conn.delete(user.getLdapEntry().getDn());
 			result = ldap.findUser(uid, conn) == null;
 
 		}catch (Exception e) {
-			user.addError("User", "Internal error deleting user from ldap direcotry");
+			if(user != null) user.addError("User", "Internal error deleting user from ldap direcotry");
 			log.warn("Failed to delete user from directory $uid: {} - $exception: {} -> {}", user.getUid(), e.getClass().getSimpleName(), e.getMessage());
 			log.debug("Failed to delete user from directory $uid: {}", user.getUid(), e);
 		}finally {
