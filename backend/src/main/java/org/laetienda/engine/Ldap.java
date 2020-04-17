@@ -123,7 +123,7 @@ public class Ldap {
 	 * 
 	 * @param username must use simple username (only uid), do not use complete dn.
 	 * @param conn Use tomcat connection otherwise it will not be able to find other users using same name or same email address
-	 * @return
+	 * @return null if user with does not exist in ldap directory
 	 */
 	public User findUser(String username, LdapConnection conn) {
 		log.info("Searching user in ldap. $useranme: {}", username);

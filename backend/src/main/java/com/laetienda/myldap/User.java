@@ -5,12 +5,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.laetienda.engine.Ldap;
 
 import com.laetienda.myapptools.FormBeanInterface;
+import com.laetienda.myapptools.Mistake;
 import com.laetienda.myapptools.MyAppTools;
 import com.laetienda.myapptools.Settings;
 
@@ -39,12 +39,13 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LogManager.getLogger(User.class);
 
-	private String uid;
+	private String uid; 
 	private Entry ldapEntry;
 	private List<Modification> modifications = new ArrayList<Modification>();
 	private Ldap ldap;
 	private HashMap<String, List<String>> errors = new HashMap<String, List<String>>();
 	private MyAppTools tools;
+	private List<Mistake> errores = new ArrayList<Mistake>();
 	
 	public User(String username, LdapConnection conn) throws Exception {
 		ldap = new Ldap();
@@ -361,12 +362,14 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 	}
 	
 	@Override
-	public void addError(String list, String error) {
-		errors = tools.addError(list, error, this.errors);
+	public void addError(String pointer, String detail) {
+		errors = tools.addError(pointer, detail, this.errors);
+		Mistake error = new Mistake(pointer, detail);
+		addError(error);
 	}
 	
 	@Override
-	public HashMap<String, List<String>> getErrors(){
+	public HashMap<String, List<String>> getErrores(){
 		return errors;
 	}
 	
@@ -383,6 +386,14 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 	public void clearModifications() {
 		modifications = new ArrayList<Modification>();
 	}
+	
+	private void addError(Mistake error) {
+		if(errors == null) {
+			errores = new ArrayList<Mistake>();
+		}
+		
+		errores.add(error);
+	}
 
 	public String getJson() {
 		
@@ -392,16 +403,8 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 		result += "\"sn\": \"" + getLdapEntry().get("sn").get() + "\",";
 		result += "\"mail\": \"" + getLdapEntry().get("mail").get() + "\"";
 		
-		if(getErrors().size() > 0) {
-			result += ",{";
-			for(Map.Entry<String, List<String>> entry : getErrors().entrySet()) {
-				result += "\""+ entry.getKey() + "\": {";
-				for(String error : entry.getValue()) {
-					result += "\""+ error + "\",";
-				}
-				result += "},";
-			}
-			result += "}";
+		if(getErrores().size() > 0) {
+			result += getJsonErrors();
 		}
 		result += "}";
 		
@@ -411,5 +414,30 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 	@Override
 	public void reloadLdapEntry(LdapConnection conn) throws LdapException {
 		ldapEntry = conn.lookup(getLdapEntry().getDn());
+	}
+
+	@Override
+	public void addError(int status, String pointer, String title, String detail) {
+		Mistake error = new Mistake(status, pointer, title, detail);
+		addError(error);
+		
+	}
+
+	@Override
+	public void addError(int status, String pointer, String detail) {
+		Mistake error = new Mistake(status, pointer, detail);
+		addError(error);
+		
+	}
+
+	@Override
+	public List<Mistake> getErrors() { 
+		return errores;
+	}
+
+	@Override
+	public String getJsonErrors() {
+		
+		return tools.getJsonErrors(errores);
 	}
 }

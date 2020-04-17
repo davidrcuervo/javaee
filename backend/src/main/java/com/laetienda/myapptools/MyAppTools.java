@@ -2,6 +2,7 @@ package com.laetienda.myapptools;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,17 @@ public class MyAppTools{
 		return errors;
 	}
 	
+	public String getJsonErrors(List<Mistake> errors) {
+		String result = "{ \"errors\": [";
+		
+		for(Mistake error : errors) {
+			result += error.getJson() + ",";
+		}
+		
+		result += "] }";
+		return result;
+	}
+	
 	public String encryptAndEncode(String password, String username) {
 		
 		String encoded = new String();
@@ -55,7 +67,9 @@ public class MyAppTools{
 		String decoded;
 		String password = new String();
 		try {
-			decoded = URLDecoder.decode(url, "UTF-8");
+			log.debug("$username: {} -> $passwordEncodedAndEncrypted: {}", username, url);
+			decoded = URLDecoder.decode(url, StandardCharsets.ISO_8859_1);
+			log.debug("url decoded: {}", decoded);
 			password = aes.decrypt(decoded, username);
 		} catch (Exception e) {
 			log.warn("Failed to decode and uncrypt password. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
@@ -66,9 +80,16 @@ public class MyAppTools{
 	}
 
 	
-    public static void main( String[] args ){	
+    public static void main( String[] args ) throws Exception{ 
+    	
     	MyAppTools tools = new MyAppTools();
-    	String temp = tools.decodeAndDecrypt("qzCSpvuPUDf9QHus9Rl22wb%2BvWKwlL8iPZJFV2fDJ2v4I1TfEIemDyJPy0hgi4RHEqLYOLc2V3c1KNcGJly7rsWcMrM%3D", "tomcat");
+    	String password = "T5UyVYjdMRPr9dqY";
+    	String username = "tomcat";
+    	String encrypted = new Aes().encrypt(password, username);
+    	String encoded = URLEncoder.encode(encrypted, StandardCharsets.ISO_8859_1);
+    	
+    	String temp = tools.decodeAndDecrypt(encoded, username);
+    	log.debug("$encryptedAndEncoded: {}", encoded);
     	log.debug("$password: {}", temp);
     	
     }

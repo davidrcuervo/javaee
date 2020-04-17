@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.laetienda.engine.Ldap;
 
+import com.laetienda.json.UserJsonParser;
 import com.laetienda.myapptools.Settings;
 import com.laetienda.myldap.User;
 import com.laetienda.repository.UserRepository;
@@ -80,6 +81,31 @@ public class UserService implements UserRepository {
 		
 		return result;
 	}
+	
+	public User update(String username, String password, UserJsonParser u) {
+		User result = null;
+		LdapConnection conn = null;
+		
+		try {
+			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
+			result = ldap.findUser(u.getUid(), conn);
+			
+			if(u.getCn() != null) result.setCn(u.getCn());
+			if(u.getSn() != null) result.setSn(u.getSn());
+			if(u.getMail() != null) result.setEmail(u.getMail(), conn);
+			if(u.getPass1() != null) result.setPassword(u.getPass1(), u.getPass2());
+			
+			ldap.modify(result, conn);
+		}catch(Exception e) {
+			if(result != null)result.addError("User", "Internal error while saving in ldap direcotry");
+			log.warn("Failed to add user into directory. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
+			log.debug("Failed to add user into directory.", e);
+		}finally {
+			ldap.closeLdapConnection(conn);
+		}
+		
+		return result;
+	}
 
 	@Override
 	public boolean delete(String username, String password, String uid) {
@@ -94,8 +120,8 @@ public class UserService implements UserRepository {
 
 		}catch (Exception e) {
 			if(user != null) user.addError("User", "Internal error deleting user from ldap direcotry");
-			log.warn("Failed to delete user from directory $uid: {} - $exception: {} -> {}", user.getUid(), e.getClass().getSimpleName(), e.getMessage());
-			log.debug("Failed to delete user from directory $uid: {}", user.getUid(), e);
+			log.warn("Failed to delete user from directory $uid: {} - $exception: {} -> {}", uid, e.getClass().getSimpleName(), e.getMessage());
+			log.debug("Failed to delete user from directory $uid: {}", uid, e);
 		}finally {
 			ldap.closeLdapConnection(conn);
 		}

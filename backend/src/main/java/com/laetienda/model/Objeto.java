@@ -1,6 +1,7 @@
 package com.laetienda.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 //import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.laetienda.myapptools.Mistake;
 import com.laetienda.myapptools.MyAppTools;
 import com.laetienda.myldap.Group;
 import com.laetienda.myldap.User;
@@ -62,6 +64,9 @@ public abstract class Objeto implements Serializable, DatabaseEntity{
 	
 	@Transient
 	private HashMap<String, List<String>> errors = new HashMap<String, List<String>>();
+	
+	@Transient
+	private List<Mistake> errores = new ArrayList<Mistake>();
 	
 	@Transient
 	private MyAppTools tools;
@@ -205,12 +210,41 @@ public abstract class Objeto implements Serializable, DatabaseEntity{
 	}
 	
 	@Override
-	public HashMap<String, List<String>> getErrors(){
-		return errors;
+	public void addError(String pointer, String detail) {
+		tools.addError(pointer, detail, errors);
+		Mistake error = new Mistake(pointer, detail);
+		addError(error);
 	}
 	
+	public void addError(int status, String pointer, String title, String detail) {
+		Mistake error = new Mistake(status, pointer, title, detail);
+		addError(error);
+	}
+	
+	public void addError(int status, String pointer, String detail) {
+		Mistake error = new Mistake(status, pointer, detail);
+		addError(error);
+	}
+	
+	private void addError(Mistake error) {
+		if(errors == null) {
+			errores = new ArrayList<Mistake>();
+		}
+		
+		errores.add(error);
+	}
+	
+	public String getJsonErrors() {
+		return tools.getJsonErrors(errores);
+	}
+	
+	public List<Mistake> getErrors(){
+		return errores;
+	}
+	
+	@Deprecated
 	@Override
-	public void addError(String list, String error) {
-		tools.addError(list, error, errors);
+	public HashMap<String, List<String>> getErrores(){
+		return errors;
 	}
 }

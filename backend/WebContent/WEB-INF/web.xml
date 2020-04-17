@@ -23,6 +23,20 @@
 	<filter-name>pathParts</filter-name>
 	<url-pattern>/user/*</url-pattern>
 </filter-mapping>
+
+<error-page>
+	<location>/error</location>
+</error-page>
+
+<servlet>
+	<servlet-name>error</servlet-name>
+	<servlet-class>com.laetienda.tomcat.ErrorController</servlet-class>
+</servlet>
+<servlet-mapping>
+	<servlet-name>error</servlet-name>
+	<url-pattern>/error</url-pattern>
+</servlet-mapping>
+
 <context-param>
 	<param-name>db.port</param-name>
 	<param-value>5432</param-value>
