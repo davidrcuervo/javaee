@@ -2,6 +2,7 @@ package com.laetienda.tomcat;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.TypedQuery;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -17,6 +18,7 @@ import org.laetienda.engine.Ldap;
 import static com.laetienda.myapptools.Settings.*;
 
 import com.laetienda.install.InstallData;
+import com.laetienda.model.AccessList;
 import com.laetienda.myauth.AuthTables;
 
 /**
@@ -54,6 +56,8 @@ public class Load implements ServletContextListener {
 		InstallData installer = new InstallData();
 		LdapConnection conn = null;
 		EntityManager em = null;
+		Authorization auth = null;
+		TypedQuery<?> query;
 		
 		try {
 			emf = db.createEntityManagerFactory();
@@ -64,7 +68,14 @@ public class Load implements ServletContextListener {
 			em = emf.createEntityManager();
 			password = new Aes().decrypt(LDAP_ADIN_AES_PASSWORD, LDAP_ADMIN_USER);
 			conn = ldap.getLdapConnection(LDAP_ADMIN_USER, password);
-			installer.createObjects(em, conn, new Authorization(conn));
+			auth = new Authorization(conn);
+			installer.createObjects(em, conn, auth);
+			
+			log.debug("Setting id all acl");
+			query = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", "all");
+			AccessList aclAll = (AccessList)db.find(query, em, auth);
+			Authorization.setACL_ALL_ID(aclAll.getId());
+			log.debug("ACL id for all has been set to authorization");
 			
 		} catch (Exception e) {
 			log.fatal("Failed to initialize tomcat context.", e);

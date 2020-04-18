@@ -17,6 +17,7 @@ import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 
+
 @Entity
 @Table(name="access_control_lists")
 @NamedQueries({

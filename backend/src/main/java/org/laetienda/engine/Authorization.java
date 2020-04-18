@@ -25,7 +25,7 @@ public class Authorization {
 	private boolean installFlag;
 
 	/**
-	 * 
+	 * It authenticate username and password. Test if auth.getUser is null to check if it get authorized.
 	 * @param username provide simple username (uid). Do not provide full Dn.
 	 * @param password
 	 * @param tables
@@ -100,7 +100,7 @@ public class Authorization {
 		return result;
 	}
 	
-	public boolean canRead(Objeto obj) throws LdapException {
+	public boolean canRead(Objeto obj) throws LdapException, NullPointerException {
 		boolean result = false;
 		
 		if(conn.isAuthenticated()) {

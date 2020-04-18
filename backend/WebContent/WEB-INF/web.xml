@@ -11,6 +11,14 @@
 	<url-pattern>/user/*</url-pattern>
 </servlet-mapping>
 
+<servlet>
+	<servlet-name>database</servlet-name>
+	<servlet-class>com.laetienda.controller.DbController</servlet-class>
+</servlet>
+<servlet-mapping>
+	<servlet-name>database</servlet-name>
+	<url-pattern>/dbApi/*</url-pattern>
+</servlet-mapping>
 <listener>
 	<listener-class>com.laetienda.tomcat.Load</listener-class>
 </listener>
@@ -21,7 +29,16 @@
 </filter>
 <filter-mapping>
 	<filter-name>pathParts</filter-name>
-	<url-pattern>/user/*</url-pattern>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+
+<filter>
+	<filter-name>authorization</filter-name>
+	<filter-class>com.laetienda.tomcat.FilterAuthorization</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>authorization</filter-name>
+	<url-pattern>/*</url-pattern>
 </filter-mapping>
 
 <error-page>
@@ -30,7 +47,7 @@
 
 <servlet>
 	<servlet-name>error</servlet-name>
-	<servlet-class>com.laetienda.tomcat.ErrorController</servlet-class>
+	<servlet-class>com.laetienda.controller.ErrorController</servlet-class>
 </servlet>
 <servlet-mapping>
 	<servlet-name>error</servlet-name>

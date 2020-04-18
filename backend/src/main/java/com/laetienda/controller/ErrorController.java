@@ -1,4 +1,4 @@
-package com.laetienda.tomcat;
+package com.laetienda.controller;
 
 import java.io.IOException;
 import java.util.HashMap;
