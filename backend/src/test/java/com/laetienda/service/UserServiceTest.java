@@ -7,10 +7,11 @@ import java.security.GeneralSecurityException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.laetienda.engine.Aes;
 
-import com.laetienda.myapptools.Settings;
-import com.laetienda.myldap.User;
+import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myldap.User;
+import com.laetienda.backend.service.UserService;
+import com.laetienda.lib.utilities.Aes;
 
 class UserServiceTest {
 	

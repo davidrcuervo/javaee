@@ -15,18 +15,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.laetienda.engine.Aes;
-import org.laetienda.engine.Authorization;
-import org.laetienda.engine.Db;
-import org.laetienda.engine.Ldap;
+import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Db;
+import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.install.InstallData;
-import com.laetienda.model.AccessList;
-import com.laetienda.myapptools.AppContext;
-import com.laetienda.myapptools.Settings;
-import com.laetienda.myauth.AuthTables;
-import com.laetienda.myldap.Group;
-import com.laetienda.myldap.User;
+import com.laetienda.backend.install.InstallData;
+import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myauth.AuthTables;
+import com.laetienda.backend.myldap.Group;
+import com.laetienda.backend.myldap.User;
+import com.laetienda.backend.repository.AccessListRepository;
+import com.laetienda.lib.utilities.Aes;
 
 class AccessListTest {
 	private final static Logger log = LogManager.getLogger();
@@ -52,7 +51,6 @@ class AccessListTest {
 		tables = new AuthTables();
 		InstallData installer = new InstallData();
 		EntityManager em = null;
-		AppContext appCtx = new AppContext();
 		
 		try {
 			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
@@ -60,9 +58,8 @@ class AccessListTest {
 			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
 			installer.createObjects(em, conn, new Authorization(conn));
-			Authorization.setACL_ALL_ID(em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", "all").getSingleResult().getId());
-			appCtx.putCtxObject("emf", emf);
-			appCtx.putCtxObject("aclTables", tables);
+			Authorization.setACL_ALL_ID(em.createNamedQuery("AccessList.findByName", AccessListRepository.class).setParameter("name", "all").getSingleResult().getId());
+
 		} catch (Exception e) {
 			log.error("User Test failed.", e);
 			fail("User Test failed. $exception: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
@@ -87,7 +84,7 @@ class AccessListTest {
 			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
 			conn = ldap.getLdapConnection(Settings.LDAP_TOMCAT_DN, password);
 			em = emf.createEntityManager();
-			query = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", "aclTest");
+			query = em.createNamedQuery("AccessList.findByName", AccessListRepository.class).setParameter("name", "aclTest");
 		} catch (Exception e) {
 			myCatch(e);
 		}
@@ -111,7 +108,7 @@ class AccessListTest {
 	private void createAcl() {
 		
 		auth = new Authorization("aclUser", "passwd1234", tables);
-		AccessList aclTest = new AccessList("aclTest", "Acl created for testing", aclUser, aclGroup, em, conn);
+		AccessListRepository aclTest = new AccessListRepository("aclTest", "Acl created for testing", aclUser, aclGroup, em, conn);
 		
 		try {
 			assertNull(db.find(query, em, auth), "At this point the accesslist should not be created yet.");
@@ -125,15 +122,15 @@ class AccessListTest {
 	}
 	
 	private void modifyAcl() {
-		AccessList acl = (AccessList)db.find(query, em, auth);
-		AccessList acl2;
+		AccessListRepository acl = (AccessListRepository)db.find(query, em, auth);
+		AccessListRepository acl2;
 		try {
 			db.begin(em);
 			assertNotNull(acl, "It didn't find the access list");
 			assertFalse(acl.isAuthorized(aclMember, conn), "Member must not be authorized yet.");
 			acl.addUser(aclMember, conn);
 			db.commit(em, auth);
-			acl2 = (AccessList)db.find(query, em, auth);
+			acl2 = (AccessListRepository)db.find(query, em, auth);
 			assertTrue(acl2.isAuthorized(aclMember, conn), "Member was not added to the acl");
 		}catch(Exception e) {
 			myCatch(e);
@@ -142,7 +139,7 @@ class AccessListTest {
 	
 	private void deleteAcl() {
 		
-		AccessList acl = (AccessList)db.find(query, em, auth);
+		AccessListRepository acl = (AccessListRepository)db.find(query, em, auth);
 		assertNotNull(acl, "Accesslist shoulbe be there before remove it");
 
 		try {
@@ -150,7 +147,7 @@ class AccessListTest {
 			assertTrue(db.remove(acl, em, auth));
 			db.commit(em, auth);
 			
-			assertNull((AccessList)db.find(query, em, auth));
+			assertNull((AccessListRepository)db.find(query, em, auth));
 		} catch (Exception e) {
 			myCatch(e);
 		} finally {

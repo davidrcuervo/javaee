@@ -14,15 +14,15 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.laetienda.engine.Aes;
-import org.laetienda.engine.Authorization;
-import org.laetienda.engine.Db;
-import org.laetienda.engine.Ldap;
+import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Db;
+import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.install.InstallData;
-import com.laetienda.model.AccessList;
-import com.laetienda.myapptools.Settings;
-import com.laetienda.myauth.AuthTables;
+import com.laetienda.backend.install.InstallData;
+import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myauth.AuthTables;
+import com.laetienda.backend.repository.AccessListRepository;
+import com.laetienda.lib.utilities.Aes;
 
 class InstallTest {
 	private final static Logger log = LogManager.getLogger(InstallTest.class);
@@ -86,7 +86,7 @@ class InstallTest {
 
 	private void testAcls(EntityManager em, LdapConnection conn) throws Exception {
 		
-		int amountOfAcls = em.createNamedQuery("AccessList.findall", AccessList.class).getResultList().size();
+		int amountOfAcls = em.createNamedQuery("AccessList.findall", AccessListRepository.class).getResultList().size();
 		assertEquals(6, amountOfAcls, "number of Access List. Check if all acls are created correctly");
 	}
 }

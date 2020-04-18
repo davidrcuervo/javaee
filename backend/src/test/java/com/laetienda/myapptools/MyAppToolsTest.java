@@ -14,14 +14,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.laetienda.engine.Aes;
-import org.laetienda.engine.Authorization;
-import org.laetienda.engine.Db;
-import org.laetienda.engine.Ldap;
+import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Db;
+import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.install.InstallData;
-import com.laetienda.model.AccessList;
-import com.laetienda.myauth.AuthTables;
+import com.laetienda.backend.install.InstallData;
+import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myauth.AuthTables;
+import com.laetienda.backend.repository.AccessListRepository;
+import com.laetienda.lib.utilities.Aes;
 
 class MyAppToolsTest {
 	private final static Logger log = LogManager.getLogger();
@@ -92,8 +93,8 @@ class MyAppToolsTest {
 			String password = new Aes().decrypt(Settings.MANAGER_AES_PASS, "manager");
 			Authorization auth = new Authorization("manager", password, tables);
 			em = emf.createEntityManager();
-			TypedQuery<?> query = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", "manager");
-			AccessList aclManager = (AccessList)db.find(query, em, auth);
+			TypedQuery<?> query = em.createNamedQuery("AccessList.findByName", AccessListRepository.class).setParameter("name", "manager");
+			AccessListRepository aclManager = (AccessListRepository)db.find(query, em, auth);
 			assertNotNull(aclManager);
 		}catch (Exception e) {
 			myCatch(e);

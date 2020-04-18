@@ -10,12 +10,12 @@ import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.laetienda.engine.Aes;
-import org.laetienda.engine.Ldap;
+import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.myapptools.Settings;
-import com.laetienda.myldap.Group;
-import com.laetienda.myldap.User;
+import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myldap.Group;
+import com.laetienda.backend.myldap.User;
+import com.laetienda.lib.utilities.Aes;
 
 public class GroupTest {
 	private static final Logger log = LogManager.getLogger();

@@ -15,13 +15,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.laetienda.engine.Aes;
-import org.laetienda.engine.Authorization;
-import org.laetienda.engine.Db;
-import org.laetienda.engine.Ldap;
+import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Db;
+import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.install.InstallData;
-import com.laetienda.myapptools.Settings;
+import com.laetienda.backend.install.InstallData;
+import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myldap.User;
+import com.laetienda.lib.utilities.Aes;
 
 class UserTest {
 	private final static Logger log = LogManager.getLogger(UserTest.class);
