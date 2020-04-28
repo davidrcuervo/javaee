@@ -75,6 +75,12 @@ public class Form extends Objeto implements Serializable {
 //		this.setCanCreateAcl(acl);
 	}
 
+	@Override
+	public String getName() {
+		
+		return name;
+	}
+
 
 
 }

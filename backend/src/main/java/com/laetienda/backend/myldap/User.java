@@ -47,6 +47,20 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 	private Tools tools;
 	private List<Mistake> errores = new ArrayList<Mistake>();
 	
+	public User(Dn userDn, LdapConnection conn) throws Exception {
+		ldap = new Ldap();
+		tools = new Tools();
+		
+		ldapEntry = conn.lookup(userDn);
+		
+		if(ldapEntry == null) {
+			log.warn("User does not exist in ldap. $username: {}", userDn.getName());
+			throw new IOException("User does not exist. $username: " + userDn.getName());
+		}
+		
+		this.uid = userDn.getRdn(0).getValue();
+	}
+	
 	public User(String username, LdapConnection conn) throws Exception {
 		ldap = new Ldap();
 		tools = new Tools();
@@ -101,7 +115,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 	public User setLdapEntry(LdapConnection conn) throws Exception {
 		log.info("Setting user LDAP entry ...");		
 		try {
-			Dn dn = new Dn("uid=" + uid, "ou=People", Settings.LDAP_DOMAIN);
+			Dn dn = new Dn("uid=" + uid, Settings.LDAP_PEOPLE_DN);
 			ldapEntry = conn.lookup(dn);
 			
 			if(ldapEntry == null) {				

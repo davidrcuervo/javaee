@@ -2,6 +2,7 @@ package com.laetienda.backend.tomcat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.Filter;
@@ -13,9 +14,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.mina.util.Base64;
 import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Ldap;
 
 import com.google.gson.Gson;
 import com.laetienda.backend.myauth.AuthTables;
@@ -42,6 +46,7 @@ public class FilterAuthorization implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		log.info("Authenticating connection");
 		
+		Ldap ldap = new Ldap();
 		HttpServletRequest req = (HttpServletRequest)request;
 		HttpServletResponse res = (HttpServletResponse)response;
 		res.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -49,20 +54,38 @@ public class FilterAuthorization implements Filter {
     	res.setCharacterEncoding("UTF-8");
 		
     	List<Mistake> errors = new ArrayList<Mistake>();
-		String username = req.getParameter("username");
-		String password = req.getParameter("password");
+    	
+    	for(Enumeration<String> e = req.getHeaderNames(); e.hasMoreElements();) {
+    		log.debug("$Header: {}", e.nextElement() );
+    	}
 		
-		auth = new Authorization(username, password, tables);
-		
-		if(auth.getUser() == null) {
-			res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			log.warn("Failed to authenticate user", username);
-			errors.add(new Mistake(401, "username", "Authentication failed","Failed to authenticate user: " + username));
-			res.getWriter().print(new Gson().toJson(errors));
-		}else {
-			req.setAttribute("auth", auth);
-			chain.doFilter(request, response);
-		}
+    	if(req.getHeader("Authorization") == null) {
+    		res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    		log.warn("No authorization credentials have been provided");
+    		errors.add(new Mistake(HttpServletResponse.SC_UNAUTHORIZED, "Authorizatoin", "Authorization header","Failed to authenticate, authorization header is missing"));
+    		res.getWriter().print(new Gson().toJson(errors));
+    	}else {
+    		String authHeader = req.getHeader("Authorization");
+    		log.debug("Getting credentials from header. $authHeader: {}", authHeader);
+    		String codedUserPassword = authHeader.split(" ")[1];
+    		String decodedUserPassword = StringUtils.newStringUtf8(Base64.decodeBase64(codedUserPassword.getBytes()));
+    		
+    		String username = decodedUserPassword.split(":")[0];
+    		log.debug("$username: {}", username);
+    		String password = decodedUserPassword.split(":")[1];
+    		
+    		auth = new Authorization(username, password, tables);
+    		if(auth.getUser() == null) {
+    			res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    			log.warn("Failed to authenticate user", username);
+    			errors.add(new Mistake(401, "username", "Authentication failed","Failed to authenticate user: " + username));
+    			res.getWriter().print(new Gson().toJson(errors));
+    		}else {
+    			req.setAttribute("auth", auth);
+    			chain.doFilter(request, response);
+    			ldap.closeAuthorization(auth);
+    		}
+    	}
 	}
 
 	public void init(FilterConfig fConfig) throws ServletException {

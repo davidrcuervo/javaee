@@ -11,7 +11,7 @@ import javax.persistence.*;
 	@NamedQuery(name="Objeto.findall", query="SELECT o FROM Objeto o")
 })
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Objeto implements Serializable{	
+public abstract class Objeto implements Serializable{	
 	private static final long serialVersionUID = 1L;
 	
 	@Id
@@ -121,4 +121,6 @@ public class Objeto implements Serializable{
 	public void setDelete(AccessList delete) {
 		this.delete = delete;
 	}
+	
+	public abstract String getName();
 }

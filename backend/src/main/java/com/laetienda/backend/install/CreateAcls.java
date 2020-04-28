@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.laetienda.backend.engine.Db;
+import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
@@ -18,13 +19,14 @@ public class CreateAcls {
 	
 	public CreateAcls(LdapConnection conn) throws Exception {
 		db = new Db();
-
-		sysadmin = new User("sysadmin", conn);
-		manager = new User("manager", conn);
-		tomcat = new User("tomcat", conn);
+		Ldap ldap = new Ldap();
 		
-		sysadmins = new Group("sysadmins", conn);
-		managers = new Group("managers", conn);
+		sysadmin = ldap.findUser("sysadmin", conn);
+		manager = ldap.findUser("manager", conn);
+		tomcat = ldap.findUser("tomcat", conn);
+		
+		sysadmins = ldap.findGroup("sysadmins", conn);
+		managers = ldap.findGroup("managers", conn);
 	}
 	
 	public AccessListRepository createSysadminAcl(EntityManager em, LdapConnection conn) throws Exception {
@@ -44,7 +46,7 @@ public class CreateAcls {
 		return acl;
 	}
 	
-	public AccessListRepository createAllAcl(EntityManager em, LdapConnection conn) {
+	public AccessListRepository createAllAcl(EntityManager em, LdapConnection conn) throws Exception {
 		
 		aclAll = new AccessListRepository(
 				"all", "Allow everybody to be granted", sysadmin, sysadmins, em, conn

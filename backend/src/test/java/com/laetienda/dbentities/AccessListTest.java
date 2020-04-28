@@ -7,7 +7,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 
 import org.apache.directory.api.ldap.model.exception.LdapException;
-import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
@@ -19,70 +18,46 @@ import org.laetienda.backend.engine.Authorization;
 import org.laetienda.backend.engine.Db;
 import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.backend.install.InstallData;
 import com.laetienda.backend.myapptools.Settings;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.repository.AccessListRepository;
+import com.laetienda.backend.test.AppContext;
+import com.laetienda.lib.model.AccessList;
 import com.laetienda.lib.utilities.Aes;
 
 class AccessListTest {
 	private final static Logger log = LogManager.getLogger();
 	
+	private static AppContext appCtx;
 	private static EntityManagerFactory emf;
-	private static AuthTables tables;
 	private Db db;
 	private Ldap ldap;
 	private EntityManager em;
-	private LdapConnection conn;
-	private Authorization auth;
+	private Authorization auth, aclMemberAuth, aclUserAuth;
 	private User aclUser, aclMember;
 	private Group aclGroup;
 	private TypedQuery<?> query;
 
 	@BeforeAll
 	static void setUpBeforeClass() {
-		
-		Ldap ldap = new Ldap();
-		Db db = new Db();
-		LdapConnection conn = null;
-		emf = null;
-		tables = new AuthTables();
-		InstallData installer = new InstallData();
-		EntityManager em = null;
-		
-		try {
-			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
-			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
-			emf = db.createEntityManagerFactory();
-			em = emf.createEntityManager();
-			installer.createObjects(em, conn, new Authorization(conn));
-			Authorization.setACL_ALL_ID(em.createNamedQuery("AccessList.findByName", AccessListRepository.class).setParameter("name", "all").getSingleResult().getId());
-
-		} catch (Exception e) {
-			log.error("User Test failed.", e);
-			fail("User Test failed. $exception: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
-		}finally {
-			ldap.closeLdapConnection(conn);
-			db.closeEm(em);
-		}
+		appCtx = new AppContext();
+		appCtx.init();
 	}
 	
 	@AfterAll
 	static void setAfterClass() {
-		Db db = new Db();
-		db.closeEmf(emf);
+		appCtx.destroy();
 	}
 	
 	@BeforeEach
 	public void setConnection() {
 		ldap = new Ldap();
 		db = new Db();
-		
+		emf = (EntityManagerFactory)appCtx.getAttribute("emf");
 		try {
-			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
-			conn = ldap.getLdapConnection(Settings.LDAP_TOMCAT_DN, password);
+
 			em = emf.createEntityManager();
 			query = em.createNamedQuery("AccessList.findByName", AccessListRepository.class).setParameter("name", "aclTest");
 		} catch (Exception e) {
@@ -93,7 +68,7 @@ class AccessListTest {
 	@AfterEach
 	public void closeConnection() {
 		db.closeEm(em);
-		ldap.closeLdapConnection(conn);
+		ldap.closeAuthorization(auth);
 	}
 
 	@Test
@@ -107,31 +82,34 @@ class AccessListTest {
 	
 	private void createAcl() {
 		
-		auth = new Authorization("aclUser", "passwd1234", tables);
-		AccessListRepository aclTest = new AccessListRepository("aclTest", "Acl created for testing", aclUser, aclGroup, em, conn);
+		AccessListRepository aclTest = null;
 		
 		try {
+			aclTest = new AccessListRepository("aclTest", "Acl created for testing", aclUser, aclGroup, em, auth.getLdapConnection());
 			assertNull(db.find(query, em, auth), "At this point the accesslist should not be created yet.");
-			assertTrue(db.insert(aclTest, em, auth));
+			assertTrue(db.insert(aclTest.getObjeto(), em, auth));
 			db.commit(em, auth);
-			assertNotNull(db.find(query, em, auth), "The acl should have been created.");
-			assertTrue(aclTest.isAuthorized(aclUser, conn));
+			assertFalse(auth.canRead(aclTest.getObjeto()));
+			assertTrue(aclUserAuth.canRead(aclTest.getObjeto()));
+			assertNull(db.find(query, em, auth), "The acl should nto be retrieved due to not having permissions.");
+			assertNotNull(db.find(query, em, aclUserAuth), "If acl exists and user has authorizations it should return the object.");
 		} catch (Exception e) {
 			myCatch(e);
 		}
 	}
 	
 	private void modifyAcl() {
-		AccessListRepository acl = (AccessListRepository)db.find(query, em, auth);
-		AccessListRepository acl2;
+		AccessList acl = (AccessList)db.find(query, em, aclUserAuth);
+		AccessListRepository aclRepo = new AccessListRepository(acl);
+		AccessList acl2;
 		try {
 			db.begin(em);
 			assertNotNull(acl, "It didn't find the access list");
-			assertFalse(acl.isAuthorized(aclMember, conn), "Member must not be authorized yet.");
-			acl.addUser(aclMember, conn);
-			db.commit(em, auth);
-			acl2 = (AccessListRepository)db.find(query, em, auth);
-			assertTrue(acl2.isAuthorized(aclMember, conn), "Member was not added to the acl");
+			assertFalse(aclMemberAuth.canRead(acl), "Member must not be authorized yet.");
+			aclRepo.addUser(aclMember, auth.getLdapConnection());
+			db.commit(em, aclUserAuth);
+			acl2 = (AccessList)db.find(query, em, aclUserAuth);
+			assertTrue(aclMemberAuth.canRead(acl2), "Member was not added to the acl");
 		}catch(Exception e) {
 			myCatch(e);
 		}
@@ -139,30 +117,32 @@ class AccessListTest {
 	
 	private void deleteAcl() {
 		
-		AccessListRepository acl = (AccessListRepository)db.find(query, em, auth);
+		AccessList acl = (AccessList)db.find(query, em, aclUserAuth);
 		assertNotNull(acl, "Accesslist shoulbe be there before remove it");
 
 		try {
 			db.begin(em);
-			assertTrue(db.remove(acl, em, auth));
+			assertTrue(db.remove(acl, em, aclUserAuth));
 			db.commit(em, auth);
-			
-			assertNull((AccessListRepository)db.find(query, em, auth));
+			assertNull((AccessList)db.find(query, em, aclUserAuth));
 		} catch (Exception e) {
 			myCatch(e);
-		} finally {
-			db.closeEm(em);
-		}
+		} 
 	}
 	
 	private void createComponents() {
+		
 		try {
-			assertTrue(ldap.insertLdapEntity(new User("aclUser", "Acl User", "Sn Less", "acluser@mail.com", "passwd1234", "passwd1234", conn),  conn), "Acl User was not created correctly");
-			assertTrue(ldap.insertLdapEntity(new User("aclMember", "Acl Member", "Sn Less", "aclmember@mail.com", "passwd1234", "passwd1234", conn),  conn), "Acl Member was not created correctly");
-			aclUser = ldap.findUser("aclUser", conn);
-			aclMember = ldap.findUser("aclMember", conn);
-			assertTrue(ldap.insertLdapEntity(new Group("aclGroup", "Group for testing acls", aclUser, conn),  conn), "Acl Member was not created correctly");
-			aclGroup = ldap.findGroup("aclGroup", conn);
+			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
+			auth = new Authorization("tomcat", password, (AuthTables)appCtx.getAttribute("tables"));
+			assertTrue(ldap.insertLdapEntity(new User("aclUser", "Acl User", "Sn Less", "acluser@mail.com", "passwd1234", "passwd1234", auth.getLdapConnection()),  auth.getLdapConnection()), "Acl User was not created correctly");
+			assertTrue(ldap.insertLdapEntity(new User("aclMember", "Acl Member", "Sn Less", "aclmember@mail.com", "passwd1234", "passwd1234", auth.getLdapConnection()),  auth.getLdapConnection()), "Acl Member was not created correctly");
+			aclUser = ldap.findUser("aclUser", auth.getLdapConnection());
+			aclMember = ldap.findUser("aclMember", auth.getLdapConnection());
+			assertTrue(ldap.insertLdapEntity(new Group("aclGroup", "Group for testing acls", aclUser, auth.getLdapConnection()),  auth.getLdapConnection()), "Acl Member was not created correctly");
+			aclGroup = ldap.findGroup("aclGroup", auth.getLdapConnection());
+			aclUserAuth = new Authorization("aclUser", "passwd1234", (AuthTables)appCtx.getAttribute("tables"));
+			aclMemberAuth = new Authorization("aclMember", "passwd1234", (AuthTables)appCtx.getAttribute("tables"));
 		} catch (Exception e) {
 			 myCatch(e);
 		}
@@ -170,11 +150,15 @@ class AccessListTest {
 	
 	private void removeComponents() {
 		try {
-			conn.delete(aclGroup.getLdapEntry().getDn());
-			conn.delete(aclUser.getLdapEntry().getDn());
-			conn.delete(aclMember.getLdapEntry().getDn());
+			auth.getLdapConnection().delete(aclGroup.getLdapEntry().getDn());
+			auth.getLdapConnection().delete(aclUser.getLdapEntry().getDn());
+			auth.getLdapConnection().delete(aclMember.getLdapEntry().getDn());
 		} catch (LdapException e) {
 			myCatch(e);
+		}finally {
+			ldap.closeAuthorization(aclMemberAuth);
+			ldap.closeAuthorization(aclUserAuth);
+			ldap.closeAuthorization(auth);
 		}
 	}
 	

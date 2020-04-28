@@ -2,10 +2,12 @@ package com.laetienda.backend.myldap;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.directory.api.ldap.model.entry.Attribute;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.entry.DefaultModification;
 import org.apache.directory.api.ldap.model.entry.Entry;
@@ -13,15 +15,19 @@ import org.apache.directory.api.ldap.model.entry.Modification;
 import org.apache.directory.api.ldap.model.entry.ModificationOperation;
 import org.apache.directory.api.ldap.model.entry.Value;
 import org.apache.directory.api.ldap.model.exception.LdapException;
+import org.apache.directory.api.ldap.model.exception.LdapInvalidAttributeValueException;
 import org.apache.directory.api.ldap.model.exception.LdapInvalidDnException;
 import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.persistence.internal.sessions.remote.SequencingFunctionCall.GetNextValue;
+import org.laetienda.backend.engine.Authorization;
 import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.myapptools.FormBeanInterface;
 import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.lib.utilities.Aes;
 import com.laetienda.lib.utilities.Mistake;
 import com.laetienda.lib.utilities.Tools;
 
@@ -115,7 +121,8 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 			}else {
 				ldapEntry = new DefaultEntry(dn);
 				ldapEntry
-						.add("objectclass", "groupOfUniqueNames")
+//						.add("objectclass", "groupOfUniqueNames")
+						.add("objectclass", "groupOfNames")
 						.add("cn", dn.getRdn(0).getValue());
 			}
 			
@@ -126,6 +133,16 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 		}
 		
 		return this;
+	}
+	
+	public String getName() {
+		String result = "";
+		try {
+			result = ldapEntry.get("cn").getString();
+		} catch (LdapInvalidAttributeValueException e) {
+			log.warn("Failed to find name of the group");
+		}
+		return result;
 	}
 	
 	@Override
@@ -206,14 +223,14 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 					addError("member", "Member cant have more than 254 letters");
 				}
 				
-				if(ldapEntry.contains("uniqueMember", member.getName())) {
+				if(ldapEntry.contains("member", member.getName())) {
 					addError("member", new String("Member, " + username + ", is part of this group"));
 				}else {
 					if(conn.exists(ldapEntry.getDn())) {
-						Modification modi = new DefaultModification(ModificationOperation.ADD_ATTRIBUTE, "uniqueMember", member.getName());
+						Modification modi = new DefaultModification(ModificationOperation.ADD_ATTRIBUTE, "member", member.getName());
 						modifications.add(modi);
 					}else {
-						ldapEntry.add("uniqueMember", member.getName());
+						ldapEntry.add("member", member.getName());
 						
 					}
 				}
@@ -232,8 +249,8 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 	}
 	
 	public boolean isMember(User user, LdapConnection conn) {
-		log.debug("Checking if user exists in group. $user: {}", user.getLdapEntry().getDn().getName());
-		return ldapEntry.contains("uniqueMember", user.getLdapEntry().getDn().getName()); 
+		log.debug("Checking if user exists in {} group. $user: {}", getName(),  user.getLdapEntry().getDn().getName());
+		return ldapEntry.contains("member", user.getLdapEntry().getDn().getName()); 
 	}
 	
 	 public List<User> getMembers(LdapConnection conn) throws LdapException {
@@ -242,7 +259,7 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 		 List<User> result = new ArrayList<User>();
 		 
 		 try {
-			 for(Value<?> val : ldapEntry.get("uniquemember")) {
+			 for(Value<?> val : ldapEntry.get("member")) {
 				 
 				User user = new User(conn.lookup(val.getString()));
 				result.add(user);
@@ -273,11 +290,11 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 		 String username = member.getRdn(0).getValue();
 		 log.info("Removing user from group. $group: {} - $user: {}", getGroupName(), username);
 		 
-		 if(ldapEntry.contains("uniquemember", member.getName())) {
+		 if(ldapEntry.contains("member", member.getName())) {
 			 if(ldapEntry.get("owner").contains(member.getName())) {
 				 addError("member" , "Member, " + username + ", is owner of the group and it can't be removed");
 			 }else {
-				 Modification modi = new DefaultModification(ModificationOperation.REMOVE_ATTRIBUTE, "uniquemember", member.getName());
+				 Modification modi = new DefaultModification(ModificationOperation.REMOVE_ATTRIBUTE, "member", member.getName());
 				 modifications.add(modi);
 			 }
 		 }else {
@@ -354,5 +371,35 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 		if(conn.exists(ldapEntry.getDn())) {
 			ldapEntry = conn.lookup(temp);
 		}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		Ldap ldap = new Ldap();
+		String password = new Aes().decrypt(Settings.SYSADMIN_AES_PASS, "sysadmin");
+		LdapConnection conn = ldap.getLdapConnection("uid=sysadmin," + Settings.LDAP_PEOPLE_DN, password);
+		
+		log.debug(conn.isConnected() ? "conn is connected" : "conn is not connected");
+		log.debug(conn.isAuthenticated() ? "conn is authenticated" : "conn is not authenticated");
+		Dn dnGroup = new Dn("cn=sysadmins,ou=Groups," + Settings.LDAP_DOMAIN);
+		Dn dnUser = new Dn("uid=sysadmin", Settings.LDAP_PEOPLE_DN);
+		log.debug("dn: {}", dnGroup.getName());
+		log.debug("dnUSer: {}", dnUser.getName());
+		Entry sysadmins = conn.lookup(dnGroup);
+		log.debug(sysadmins == null ? "entry not found" : "entry found");
+		
+		boolean result = sysadmins.contains("member", dnUser.getName());
+		log.debug(result ? "true" : "false");
+		
+		User user = ldap.findUser("sysadmin", conn);
+		Group group = ldap.findGroup("sysadmins", conn);
+		
+		Attribute members = group.getLdapEntry().get("owner");
+		log.debug("member: {}", members.get().getString());
+		log.debug("$user: {}", user.getLdapEntry().getDn().getName());
+		log.debug(group.getLdapEntry() == null ? "group not found" : String.format("group found. $dn: %s", group.getLdapEntry().getDn().getName()));
+		result = group.getLdapEntry().contains("member", user.getLdapEntry().getDn().getName());
+		
+		log.debug(result ? "true" : "false");
+		ldap.closeLdapConnection(conn);
 	}
 }

@@ -5,6 +5,7 @@
 		<class>com.laetienda.lib.model.Objeto</class>
 		<class>com.laetienda.lib.model.AccessList</class>
 		<class>com.laetienda.lib.model.Component</class>
+		<class>com.laetienda.lib.model.Wiki</class>
 		
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>

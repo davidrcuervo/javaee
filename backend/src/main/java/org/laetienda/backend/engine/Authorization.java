@@ -1,6 +1,7 @@
 package org.laetienda.backend.engine;
 
 import org.apache.directory.api.ldap.model.exception.LdapException;
+import org.apache.directory.api.ldap.model.exception.LdapInvalidDnException;
 import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
@@ -10,8 +11,8 @@ import com.laetienda.backend.myapptools.Settings;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
-import com.laetienda.backend.repository.AccessListRepository;
-import com.laetienda.backend.repository.ObjetoRepository;
+import com.laetienda.lib.model.AccessList;
+import com.laetienda.lib.model.Objeto;
 
 public class Authorization {
 	private final static Logger log = LogManager.getLogger(Authorization.class);
@@ -31,20 +32,46 @@ public class Authorization {
 	 * @param tables
 	 */
 	public Authorization(String username, String password, AuthTables tables) {
+
+		try {
+			Dn dn = new Dn("uid=" + username + ",ou=People," + Settings.LDAP_DOMAIN);
+			init(dn, password, tables);
+		} catch (LdapInvalidDnException e) {
+			log.error("Failed to create valid Dn from username. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
+		}
+	}
+	
+	public Authorization(Dn userDn, String password, AuthTables tables) {
+		log.debug("running Authorization constructor by getting user Dn");
+		init(userDn, password, tables);
+	}
+	
+//	public Authorization(LdapConnection conn, AuthTables tables) {
+////		installFlag = true;
+//		this.tables = tables;
+//		ldap = new Ldap();
+//		this.conn = conn;
+//	}
+	
+	private void init(Dn userDn, String password, AuthTables tables) {
+		log.info("Authenticating user. $user: {}", userDn.getName());
 		
 		this.tables = tables;
 		ldap = new Ldap();
 		user = null;
-		conn =null;
+		conn = null;
 		installFlag = false;
 		
 		try {
-			Dn dn = ldap.buildDn("uid=" + username + ",ou=People," + Settings.LDAP_DOMAIN);
-			LdapConnection temp = ldap.getLdapConnection(dn.getName(), password);
+			
+			LdapConnection temp = ldap.getLdapConnection(userDn.getName(), password);
 			
 			if(temp.isConnected() && temp.isAuthenticated()) {
 				conn = temp;
-				user = ldap.findUser(username, conn);
+				user = ldap.findUser(userDn, conn);
+				log.debug("User has authenticated succesfully. $user: {}", user.getLdapEntry().getDn().getName());
+			}else {
+				log.warn("Authentication failed. $userDn: {}", userDn.getName());
 			}
 			
 		} catch (Exception e) {
@@ -53,16 +80,11 @@ public class Authorization {
 		}
 	}
 	
-	public Authorization(LdapConnection conn) {
-		installFlag = true;
-		this.conn = conn;
-	}
-	
-	public boolean canDelete(ObjetoRepository obj) throws LdapException {
+	public boolean canDelete(Objeto obj) throws LdapException {
 		boolean result = false;
 		
 		if(isAuthenticated(obj)) {
-			if(tables.isInWriteTable(obj.getId(), user.getUid())) {
+			if(isSysadmin() || tables.isInWriteTable(obj.getId(), user.getUid())) {
 				result = true;
 				log.debug("{} is authorized in delete table for object.", user.getUid(), obj.getName());
 			}else {
@@ -70,7 +92,7 @@ public class Authorization {
 					result = true;
 					tables.addInDeleteTable(obj.getId(), user.getUid());
 				}else {
-					obj.addError("Objeto", "It does not have enough rights to read");
+//					obj.addError("Objeto", "It does not have enough rights to read");
 					log.warn("{} does have enough rights to delete objeto: {}", user.getUid(), obj.getName());
 				}
 			}
@@ -79,7 +101,7 @@ public class Authorization {
 		return result;
 	}
 	
-	public boolean canWrite(ObjetoRepository obj) throws LdapException {
+	public boolean canWrite(Objeto obj) throws LdapException {
 		boolean result = false;
 		
 		if(isAuthenticated(obj)) {
@@ -91,7 +113,7 @@ public class Authorization {
 					result = true;
 					tables.addInWriteTable(obj.getId(), user.getUid());
 				}else {
-					obj.addError("Objeto", "It does not have enough rights to write");
+//					obj.addError("Objeto", "It does not have enough rights to write");
 					log.warn("{} does have enough rights to write objeto: {}", user.getUid(), obj.getName());
 				}
 			}
@@ -100,7 +122,7 @@ public class Authorization {
 		return result;
 	}
 	
-	public boolean canRead(ObjetoRepository obj) throws LdapException, NullPointerException {
+	public boolean canRead(Objeto obj) throws LdapException, NullPointerException {
 		boolean result = false;
 		
 		if(conn.isAuthenticated()) {
@@ -112,12 +134,24 @@ public class Authorization {
 					result = true;
 					tables.addInReadTable(obj.getId(), user.getUid());
 				}else {
-					obj.addError("Objeto", "It does not have enough rights to read");
+//					obj.addError("Objeto", "It does not have enough rights to read");
 					log.warn("{} does have enough rights to read objeto: {}", user.getUid(), obj.getName());
 				}
 			}
 		}
 
+		return result;
+	}
+	
+	public boolean isSysadmin() {
+		boolean result = false;
+		Group sysadmins = ldap.findGroup("sysadmins", conn);
+		
+		if(sysadmins != null && sysadmins.isMember(user, conn)) {
+			result = true;
+			log.debug("User is authorized because belongs to sysadmin group. $username: {}", user.getUid());
+		}
+		
 		return result;
 	}
 
@@ -127,24 +161,20 @@ public class Authorization {
 	 * @return
 	 * @throws LdapException
 	 */
-	private boolean isAuthorized(ObjetoRepository obj, AccessListRepository acl) throws LdapException {
+	private boolean isAuthorized(Objeto obj, AccessList acl) throws LdapException {
 		boolean result = false;
-		Group sysadmins = ldap.findGroup("sysadmins", conn);
+		
 		
 		if(isAuthenticated(obj)) {
-			if(installFlag) {
+			if(isSysadmin()) {
 				result = true;
-				log.debug("User has been authorized because installation flag is up");
-			}else if(sysadmins != null && sysadmins.isMember(user, conn)) {
-				result = true;
-				log.debug("User is authorized because belongs to sysadmin group. $username: {}", user.getUid());
 			}else if(user != null && obj.getOwner().equals(user.getUid())) {
 				result = true;
 				log.debug("User is authorized because because he/she is the owner of the objeto. $username: {} -> $objectName: {}", user.getUid(), obj.getName());
 			}else if(acl.getId() == ACL_ALL_ID) {
 				result = true;
 				log.debug("User is auhtorized becuse access list allows everybody");
-			}else if(acl.isAuthorized(user, conn)) {
+			}else if(isInAcl(acl)) {
 				result = true;
 			}else {
 				log.debug("User {} is not authorized by acl {}", user.getCn(), acl.getName());
@@ -154,13 +184,34 @@ public class Authorization {
 		return result;
 	}
 	
-	private boolean isAuthenticated(ObjetoRepository obj) {
+	private boolean isInAcl(AccessList acl) {
+		boolean result = false;
+		Ldap ldap = new Ldap();
+		
+		if(acl.getUsers().contains(user.getUid())) {
+			result = true;
+			log.debug("User is authorized becuase he/she exists in the users of the acl. $user: {} - $acl: {}", user.getUid(), acl.getName());
+		}else {
+			for(String temp : acl.getGroups()) {
+				Group group = ldap.findGroup(temp, conn);
+				if(group != null && group.isMember(user, conn)){
+					result = true;
+					log.debug("User is authorized becuase he/she exists in a group of the acl. $user: {} - $acl: {} - $group: {}", user.getUid(), acl.getName(), group.getName());
+					break;
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	private boolean isAuthenticated(Objeto ojb) {
 		boolean result = false;
 		
 		if(conn.isAuthenticated()) {	
 			result = true;
 		}else {
-			obj.addError("App", "User is not authenticated.");
+//			ojb.addError("App", "User is not authenticated.");
 			log.warn("User is not authenticated. $username: {}", user.getUid());
 		}
 		
@@ -176,7 +227,7 @@ public class Authorization {
 		return user;
 	}
 
-	public LdapConnection getConn() {
+	public LdapConnection getLdapConnection() {
 		return conn;
 	}
 	

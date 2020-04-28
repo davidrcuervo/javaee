@@ -67,6 +67,10 @@ public class Ldap {
 		log.info("...Ldap Connection closed succesfully");
 	}
 	
+	public void closeAuthorization(Authorization auth) {
+		closeLdapConnection(auth.getLdapConnection());
+	}
+	
 	public Dn buildDn(String dn) throws LdapInvalidDnException {
 		log.info("Building Dn object. $dn: {}", dn);
 		Dn result = null;
@@ -123,14 +127,27 @@ public class Ldap {
 	 * 
 	 * @param username must use simple username (only uid), do not use complete dn.
 	 * @param conn Use tomcat connection otherwise it will not be able to find other users using same name or same email address
-	 * @return null if user with does not exist in ldap directory
+	 * @return null if user with does not exist or if LdapConnection does not have privileges to ready group
 	 */
 	public User findUser(String username, LdapConnection conn) {
 		log.info("Searching user in ldap. $useranme: {}", username);
-		
 		User result = null;
+		Dn userDn;
 		try {
-			result = new User(username, conn);
+			userDn = new Dn("uid=" + username, LDAP_PEOPLE_DN);
+			result = findUser(userDn, conn);
+		} catch (LdapInvalidDnException e) {
+			log.error("Failed to build user DN from username. $exception {} -> {}", e.getClass().getSimpleName(), e.getMessage());
+		}
+		
+		return result;
+	}
+	
+	public User findUser(Dn userDn, LdapConnection conn) {
+		User result = null;
+		
+		try {
+			result = new User(userDn, conn);
 		} catch (Exception e) {
 			log.warn("User does not exist in ldap. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			log.debug("User does not exist in ldap.", e);
@@ -143,7 +160,7 @@ public class Ldap {
 	 * 
 	 * @param group Use simple name of group (only cn), do not use complete dn string
 	 * @param conn Use tomcat connection, otherwise it will not be able to find other groups with same name
-	 * @return
+	 * @return null if group does not exist or if LdapConnection does not have privileges to ready group
 	 */
 	public Group findGroup(String group, LdapConnection conn) {
 		log.info("Searching group in ldap. $groupname: {}", group);

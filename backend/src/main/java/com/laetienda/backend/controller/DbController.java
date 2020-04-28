@@ -14,14 +14,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Authorization;
 
 import com.google.gson.Gson;
-import com.laetienda.backend.json.DbInputJsonParser;
-import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.service.DbService;
+import com.laetienda.lib.model.Objeto;
 import com.laetienda.lib.utilities.Mistake;
 
 public class DbController extends HttpServlet {
@@ -34,8 +34,9 @@ public class DbController extends HttpServlet {
 	private List<Mistake> errors;
 	private DbService service;
 	private EntityManagerFactory emf;
-	private AuthTables tables;
+//	private AuthTables tables;
 	private Authorization auth;
+	private LdapConnection connTomcat;
        
     public DbController() {
         super();
@@ -43,22 +44,24 @@ public class DbController extends HttpServlet {
     
     public void init(ServletConfig config) throws ServletException{
     	emf = (EntityManagerFactory)config.getServletContext().getAttribute("emf");
-    	tables = (AuthTables)config.getServletContext().getAttribute("tables");
+//    	tables = (AuthTables)config.getServletContext().getAttribute("tables");
     }
     
-    private void build(HttpServletRequest req, HttpServletResponse res) {
+    private void doInit(HttpServletRequest req, HttpServletResponse res) {
     	gson = new Gson();
     	errors = new ArrayList<Mistake>();
     	result = "Failed to process request.";
     	auth = (Authorization)req.getAttribute("auth");
-    	service = new DbService(emf, tables, auth);
+    	connTomcat = (LdapConnection)req.getAttribute("connTomcat");
+    	service = new DbService(emf, auth, connTomcat);
     	pathParts = (String[])req.getAttribute("pathParts");
     }
 
     @Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		log.info("Getting GET request on DbController.");
-    	//https://<host & port>/<ctx name>/<url pattern>/{className}/{queyName}/parName1/parVal1/parName2/parVal2....
+    	
+		//https://<host & port>/<ctx name>/<url pattern>/{className}/{queyName}/parName1/parVal1/parName2/parVal2....
     	//http://localhost:8080/backend/dbApi/AccessList/AccessList.findByName/name/all
     	
     	String className;
@@ -66,7 +69,7 @@ public class DbController extends HttpServlet {
     	Map<String, String> parameters = new HashMap<String, String>();
     	
 		try {
-			build(req, res);
+			doInit(req, res);
 			
 			className = pathParts[0];
 			queryName = pathParts[1];
@@ -93,26 +96,34 @@ public class DbController extends HttpServlet {
 			doCatch(e, res);
 		}
 		
-		if(errors.size() > 0) {
-			res.getWriter().print(gson.toJson(errors));
-		}else {
-			res.getWriter().print(result);
-		}
+		doPrint(res);
 	}
     
 
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		
-		List<DbInputJsonParser> parameters = new ArrayList<DbInputJsonParser>();
-		
+		log.info("Getting POST request on DbController.");
+    	
+		//https://<host & port>/<ctx name>/<url pattern>/{className}
+    	//http://localhost:8080/backend/dbApi/Component
+    	
+		Objeto obj;
+
     	try {
-			build(req, res);
+			doInit(req, res);
 			if(pathParts[0].isBlank() && pathParts.length == 1) {
 				
+				String className = pathParts[0];
 				String postData = req.getReader().lines().collect(Collectors.joining());
-				parameters = gson.fromJson(postData, parameters.getClass());
+				obj = service.post(className, postData);
+				
+				if(obj == null) {
+					errors.add(new Mistake(HttpServletResponse.SC_BAD_REQUEST, "parameters", "Bad parameters request", "Check sent parameters and check they match the classname"));
+				}else {
+					res.setStatus(HttpServletResponse.SC_OK);
+					result = gson.toJson(obj);
+				}
 				
 			}else {
 				log.warn("No valid url path: {}", req.getRequestURI());	
@@ -124,7 +135,44 @@ public class DbController extends HttpServlet {
 			doCatch(e, res);
 		}
 		
-    	if(errors.size() > 0) {
+    	doPrint(res);
+	}
+	
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+		log.info("Running PUT request on DbController.");
+		
+		//https://<host & port>/<ctx name>/<url pattern>/{className}
+    	//http://localhost:8080/backend/dbApi/Component/
+		
+		String postData, className;
+		
+		try {
+			doInit(req, res);
+			
+			if(pathParts[0].isBlank() && pathParts.length == 1) {
+				
+				postData = req.getReader().lines().collect(Collectors.joining());
+				className = pathParts[0];
+				service.put(className, postData);
+				
+			}else {
+				errors.add(new Mistake(HttpServletResponse.SC_NOT_FOUND, "URL", "URL not found", "Check url. I requieres class name and object id"));
+			}
+			
+		}catch(NumberFormatException e) {
+			errors.add(new Mistake(HttpServletResponse.SC_NOT_FOUND, "ID", "Invalid ID", "The id should be a valid integer"));
+		}catch(Exception e) {
+			doCatch(e, res);
+		}finally {
+			
+		}
+		
+		doPrint(res);
+	}
+	
+	private void doPrint(HttpServletResponse res) throws IOException {
+		if(errors.size() > 0) {
 			res.getWriter().print(gson.toJson(errors));
 		}else {
 			res.getWriter().print(result);

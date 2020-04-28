@@ -14,6 +14,7 @@ import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.repository.AccessListRepository;
 import com.laetienda.backend.repository.ComponentRepository;
+import com.laetienda.lib.model.AccessList;
 
 public class InstallData {
 	static final Logger log = LogManager.getLogger(InstallData.class);
@@ -53,10 +54,18 @@ public class InstallData {
 //		}
 //	}
 	
-	public void createObjects(EntityManager em, LdapConnection conn, Authorization auth) throws Exception {
-
+	public void createLdapObjects(Authorization auth) throws Exception {
+		LdapConnection conn = auth.getLdapConnection();
 		createUsers(conn);
 		createGroups(conn);
+	}
+	
+//	public void createObjects(EntityManager em, Authorization auth) throws Exception {
+	public void createDbObjects(EntityManager em, Authorization auth) throws Exception {
+		LdapConnection conn = auth.getLdapConnection();
+		createUsers(conn);
+		createGroups(conn);
+		
 		createAcls(em, conn, auth);
 		db.commit(em, auth);
 	}
@@ -82,14 +91,14 @@ public class InstallData {
 		aclAll = acls.createAllAcl(em, conn);
 		aclOwner = acls.createOwnerAcl(em, conn);
 		aclGroup = acls.createGroupAcl(em, conn);
-		ComponentRepository aclsComponent = new ComponentRepository("ACLs", "This component is mainly used to know who can create acls", AccessListRepository.class, sysadmin, sysadmins, aclAll, aclAll, aclAll, em, conn );
+		ComponentRepository aclsComponent = new ComponentRepository("ACLs", "This component is mainly used to know who can create acls", AccessList.class, sysadmin, sysadmins, aclAll, aclAll, aclAll, em, conn );
 		
-		db.insert(aclsComponent, em, auth);
-		db.insert(aclSysadmin, em, auth);
-		db.insert(aclManager, em, auth);
-		db.insert(aclAll, em, auth);
-		db.insert(aclOwner, em, auth);
-		db.insert(aclGroup, em, auth);
+		db.insert(aclsComponent.getObjeto(), em, auth);
+		db.insert(aclSysadmin.getObjeto(), em, auth);
+		db.insert(aclManager.getObjeto(), em, auth);
+		db.insert(aclAll.getObjeto(), em, auth);
+		db.insert(aclOwner.getObjeto(), em, auth);
+		db.insert(aclGroup.getObjeto(), em, auth);
 	}
 	
 	@Deprecated
@@ -104,7 +113,7 @@ public class InstallData {
 		languages.addOption("es", "Espanol");
 		languages.addOption("fr", "Francais");
 		
-		Form form = new Form("group", "com.laetienda.entities.Group", "/WEB-INF/jsp/email/signup.jsp", "/WEB-INF/jsp/thankyou/signup.jsp", aclManager);
+//		Form form = new Form("group", "com.laetienda.entities.Group", "/WEB-INF/jsp/email/signup.jsp", "/WEB-INF/jsp/thankyou/signup.jsp", aclManager);
 //		form.addInput(new Input(form, "name", "Group Name", "string", "Insert the group name", "glyphicon-user", true));
 //		form.addInput(new Input(form, "description", "Description", "string", "Insert description of the group", "glyphicon-user", true));
 	}

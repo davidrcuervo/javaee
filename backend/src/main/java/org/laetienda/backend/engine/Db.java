@@ -18,9 +18,9 @@ import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.laetienda.backend.repository.ComponentRepository;
-import com.laetienda.backend.repository.ObjetoRepository;
 import com.laetienda.backend.repository.RepositoryInterface;
+import com.laetienda.lib.model.Component;
+import com.laetienda.lib.model.Objeto;
 import com.laetienda.lib.utilities.Aes;
 
 public class Db {
@@ -80,13 +80,17 @@ public class Db {
 		}
 	}
 	
-	public ObjetoRepository find(TypedQuery<?> query, EntityManager em, Authorization auth) {
-		ObjetoRepository result = null;
+	public Objeto find(TypedQuery<?> query, EntityManager em, Authorization auth) {
+		
+		Objeto result = null;
 		try {
-			result = (ObjetoRepository)query.getSingleResult();
+			result = (Objeto)query.getSingleResult();
+			
 			if(auth.canRead(result)) {
+				
 				log.debug("$user: {} -> can read $objeto: {}", auth.getUser().getUid(), result.getName());
 			}else {
+				log.debug("$user: {} -> does not have rights to read $objeto: {}", auth.getUser().getUid(), result.getName());
 				result = null;
 			}
 			
@@ -98,37 +102,48 @@ public class Db {
 		return result;
 	}
 	
-	public boolean insert(RepositoryInterface obj, EntityManager em, Authorization auth) throws Exception {
-		log.debug("obj.getClass().getName(): {}", obj.getClass().getName());	
+	public boolean insert(RepositoryInterface objRepo, EntityManager em, Authorization auth) throws Exception {
 		boolean result = false;
 		
-		
-		List<ComponentRepository> comps = em.createNamedQuery("Component.findByJavaClassName", ComponentRepository.class).setParameter("javaClassName", obj.getClass().getName()).getResultList();
-		ComponentRepository comp = null;
-		
-		if(comps.size() == 1) {
-			comp = comps.get(0);
-		}
-		
-		if(auth.isInstallFlag() || auth.canWrite(comp)) {
-			result = insert(obj, em);
+		if(objRepo.getErrors().size() > 0) {
+			log.warn("It contains errors and can't be persisted into database");
 		}else {
-			log.warn("{} is not authorizes to create {}", auth.getUser().getUid(), comp.getName());
+			result = insert(objRepo.getObjeto(), em, auth);
 		}
-		
 		
 		return result;
 	}
 	
-	private boolean insert(RepositoryInterface obj, EntityManager em) throws PersistenceException, IllegalArgumentException{
+	public boolean insert(Objeto obj, EntityManager em, Authorization auth) throws Exception {
+		log.debug("obj.getClass().getName(): {}", obj.getClass().getName());	
+		boolean result = false;
+		
+		List<Component> comps = em.createNamedQuery("Component.findByJavaClassName", Component.class).setParameter("javaClassName", obj.getClass().getName()).getResultList();
+		Component comp = null;
+		
+		if(comps != null && comps.size() == 1) {
+			comp = comps.get(0);
+		}
+	
+//		if(auth.isInstallFlag() || auth.canWrite(comp)) {
+		if(auth.isSysadmin() || auth.canWrite(comp)) {
+			result = insert(obj, em);
+		}else {
+			log.warn("{} is not authorizes to create", auth.getUser().getUid());
+		}
+		
+		return result;
+	}
+	
+	private boolean insert(Objeto obj, EntityManager em) throws PersistenceException, IllegalArgumentException{
 		log.debug("Inserting objeto in database");
 		
 		boolean result = false;
 		try {
 			
-			if(obj.getErrors().size() > 0) {
-				log.warn("It contains errors and can't be persisted into database");				
-			}else {
+//			if(obj.getErrors().size() > 0) {
+//				log.warn("It contains errors and can't be persisted into database");				
+//			}else {
 				
 				if(em.getTransaction().isActive()) {
 					log.debug("EntityManager transaction is active");					
@@ -139,7 +154,7 @@ public class Db {
 				
 				em.persist(obj);
 				result = true;
-			}
+//			}
 			
 		}catch (PersistenceException | IllegalArgumentException e) {
 			log.error("Failed to persist in database. $error: {}", e.getMessage());
@@ -149,7 +164,18 @@ public class Db {
 		return result;
 	}
 	
-	public boolean remove(ObjetoRepository obj, EntityManager em, Authorization auth) throws LdapException {
+	public boolean merge(Objeto obj, EntityManager em, Authorization auth) throws LdapException {
+		boolean result = false;
+		
+		if(auth.canWrite(obj)) {
+			em.merge(obj);
+			result = true;
+		}
+		
+		return result;
+	}
+	
+	public boolean remove(Objeto obj, EntityManager em, Authorization auth) throws LdapException {
 		boolean result = false;
 		if(auth.canDelete(obj)) {
 			if(em.getTransaction().isActive()) {

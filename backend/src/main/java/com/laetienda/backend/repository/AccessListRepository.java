@@ -6,11 +6,11 @@ import java.util.List;
 import javax.persistence.*;
 
 import org.apache.logging.log4j.Logger;
-import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.lib.model.AccessList;
+import com.laetienda.lib.model.Objeto;
 
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.ldap.client.api.LdapConnection;
@@ -23,6 +23,7 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 	
 	/**
 	 * 
+	 * This constructor requires all parameters, included acl for delete, write and read
 	 * @param name
 	 * @param description
 	 * @param owner
@@ -40,22 +41,32 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 				AccessListRepository delete, AccessListRepository write, AccessListRepository read,
 				EntityManager em, LdapConnection conn) throws Exception 
 	{
-		super(owner, group, delete, write, read, conn);
 		accessList = new AccessList();
+		createObjeto(accessList, owner, group, delete, write, read, conn);
 		setName(name, em);
 		setDescription(description);
 		addUser(owner, conn);
 		addGroup(group, conn);
 		
 	}
-	
+	/**
+	 * This constructor does not requires acl for delete, write and read. Instead it will use the own acl.
+	 * @param name
+	 * @param description
+	 * @param owner
+	 * @param group
+	 * @param em
+	 * @param conn
+	 * @throws Exception 
+	 */
 	public AccessListRepository(
 				String name, String description,
 				User owner, Group group,
 				EntityManager em, LdapConnection conn
-			) {
+			) throws Exception {
 		accessList = new AccessList();
-		setDefaultObjeto(owner, group, conn);
+		createObjeto(accessList, owner, group, this, this, this, conn);
+//		setDefaultObjeto(owner, group, conn);
 		setName(name, em);
 		setDescription(description);
 	}
@@ -65,6 +76,7 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 	}
 	
 	private void setDefaultObjeto(User owner, Group group, LdapConnection conn) {
+//		super.setObjeto(this);
 		setOwner(owner, conn);
 		setGroup(group, conn);
 		super.setDelete(this);
@@ -218,26 +230,16 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 		}
 	}
 	
-	public boolean isAuthorized(User user, LdapConnection conn){
-		boolean result = false;
-		Ldap ldap = new Ldap();
-		
-		if(accessList.getUsers().contains(user.getUid())) {
-			result = true;
-		}else {
-			for(String temp : accessList.getGroups()) {
-				Group group = ldap.findGroup(temp, conn);
-				if(group != null && group.isMember(user, conn)){
-					result = true;
-					break;
-				}
-			}
-		}
-		
-		return result;
+	public AccessList getAccessList() {
+		return accessList;
+	}
+
+	@Override
+	public void setObjeto(Objeto objeto) {
+		accessList = (AccessList)objeto;
 	}
 	
-	public AccessList getAccessList() {
+	public AccessList getObjeto() {
 		return accessList;
 	}
 }

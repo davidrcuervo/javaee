@@ -11,19 +11,20 @@ import org.apache.logging.log4j.Logger;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.lib.model.Component;
+import com.laetienda.lib.model.Objeto;
 
 public class ComponentRepository extends ObjetoRepository implements RepositoryInterface {
 	private static final Logger log = LogManager.getLogger(ComponentRepository.class);
 
 	private Component component;
 	
-	public ComponentRepository() {
-		component = new Component();
+	public ComponentRepository(Component component) {
+		this.component = component;
 	}
 	
 	public ComponentRepository(String name, String description, Class<?> javaClass,User owner, Group group, AccessListRepository delete, AccessListRepository write, AccessListRepository read, EntityManager em, LdapConnection conn) throws Exception {
-		super(owner, group, delete, write, read, conn);
 		component = new Component();
+		createObjeto(component, owner, group, delete, write, read, conn);
 		setName(name, em);
 		setDescription(description);
 		setJavaClass(javaClass);
@@ -77,7 +78,7 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 		
 		try {
 			Object o = Class.forName(javaClass.getName()).getDeclaredConstructor().newInstance();
-			if(o instanceof ObjetoRepository) {
+			if(o instanceof Objeto) {
 				component.setJavaClassName(javaClass.getName());
 				log.debug("javaClassName has be set succesfully with no errors");
 			}else {
@@ -94,5 +95,15 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 	@Override
 	public String getName() {
 		return component.getName();
+	}
+	
+	public Component getObjeto() {
+		return component;
+	}
+
+	@Override
+	public void setObjeto(Objeto component) {
+		this.component = (Component)component;
+		
 	}
 }

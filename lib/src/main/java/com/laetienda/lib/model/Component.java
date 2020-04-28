@@ -24,7 +24,7 @@ public class Component extends Objeto implements Serializable {
 	private String description;
 	
 	public Component() {
-		
+		super();
 	}
 
 	public String getName() {

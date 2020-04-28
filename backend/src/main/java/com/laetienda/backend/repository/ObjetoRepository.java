@@ -29,10 +29,10 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 	private List<Mistake> errores = new ArrayList<Mistake>();
 	private Tools tools;
 	
-	public ObjetoRepository() {
-		tools = new Tools();
-		objeto = new Objeto();
-	}
+//	public ObjetoRepository() {
+//		tools = new Tools();
+//		
+//	}
 	
 	/**
 	 * 
@@ -44,9 +44,9 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 	 * @param conn
 	 * @throws Exception
 	 */
-	public ObjetoRepository(User owner, Group Group, AccessListRepository delete, AccessListRepository write, AccessListRepository read, LdapConnection conn) throws Exception {
+	public void createObjeto(Objeto objeto, User owner, Group Group, AccessListRepository delete, AccessListRepository write, AccessListRepository read, LdapConnection conn) throws Exception {
 		tools = new Tools();
-		objeto = new Objeto();
+		this.objeto = objeto;
 		setOwner(owner, conn);
 		setGroup(Group, conn);
 		setDelete(delete);
