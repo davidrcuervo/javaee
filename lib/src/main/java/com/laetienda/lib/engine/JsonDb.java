@@ -60,15 +60,22 @@ public class JsonDb {
 	}
 	
 	public Objeto post() {
+		Objeto result = null;
 		HttpPost post = new HttpPost(uri);
+		
+		return result;
 	}
 	
 	public Objeto put() {
+		Objeto result = null;
 		
+		return result;
 	}
 	
 	public boolean delete() {
+		boolean result = false;
 		
+		return result;		
 	}
 	
 	private Header getAuthorizationHeader(String username, String password) {
