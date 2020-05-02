@@ -79,7 +79,6 @@ public class Tools{
 		return password;
 	}
 
-	
     public static void main( String[] args ) throws Exception{ 
     	
     	Tools tools = new Tools();

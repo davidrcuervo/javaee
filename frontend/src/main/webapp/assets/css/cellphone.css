@@ -1,0 +1,22 @@
+@charset "UTF-8";
+
+/*PORTRAIT*/
+@media only screen and (min-width: 320px){
+
+}
+
+/*LANDSCAPE*/
+@media only screen and (min-width: 568px){
+	
+	nav#topNav li{
+		display: inline-block;
+	}
+	
+	nav#topNav li.onlymobile{
+		display: none;
+	}
+	
+	nav#topNav li.rightOnWide{
+		float: right;
+	}
+}

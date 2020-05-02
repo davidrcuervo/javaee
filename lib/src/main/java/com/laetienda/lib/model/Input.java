@@ -1,11 +1,8 @@
-package com.laetienda.backend.model;
+package com.laetienda.lib.model;
 
 import java.io.Serializable;
 
 import javax.persistence.*;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name="inputs")
@@ -14,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 })
 public class Input implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private static Logger log = LogManager.getLogger(Input.class);
 	
 	@Id
 	@SequenceGenerator(name = "input_id_seq", sequenceName = "input_id_seq", allocationSize=1)
@@ -43,119 +39,71 @@ public class Input implements Serializable {
 	@Column(name="\"value\"", unique=false, nullable=false, length=254)
 	private boolean value;
 	
-	
 	public Input() {
-		super();
+		
 	}
 
-	public Input(Form form, String name, String label, String type, boolean value) {
-		super();
-		this.form = form;
-		this.name = name;
-		this.label = label;
-		this.type = type;
-		this.value = value;
+	public Integer getId() {
+		return id;
 	}
 
-	public Input(Form form, String name, String label, String type, String placeholder, String glyphicon,
-			boolean value) {
-		super();
-		this.form = form;
-		this.name = name;
-		this.label = label;
-		this.type = type;
-		this.placeholder = placeholder;
-		this.glyphicon = glyphicon;
-		this.value = value;
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public Form getForm() {
 		return form;
 	}
 
-
-
 	public void setForm(Form form) {
 		this.form = form;
 	}
-
-
 
 	public String getName() {
 		return name;
 	}
 
-
-
 	public void setName(String name) {
 		this.name = name;
 	}
-
-
 
 	public String getLabel() {
 		return label;
 	}
 
-
-
 	public void setLabel(String label) {
 		this.label = label;
 	}
 
-
-
 	public String getType() {
-		return type.toLowerCase();
+		return type;
 	}
-
-
 
 	public void setType(String type) {
 		this.type = type;
 	}
 
-
-
 	public String getPlaceholder() {
 		return placeholder;
 	}
-
-
 
 	public void setPlaceholder(String placeholder) {
 		this.placeholder = placeholder;
 	}
 
-
-
 	public String getGlyphicon() {
 		return glyphicon;
 	}
-
-
 
 	public void setGlyphicon(String glyphicon) {
 		this.glyphicon = glyphicon;
 	}
 
-
-
 	public boolean isValue() {
 		return value;
 	}
 
-
-
 	public void setValue(boolean value) {
 		this.value = value;
 	}
-
-
-
-	public static void main(String[] args) {
-		log.info("Testing Input form");
-
-	}
-
 }
