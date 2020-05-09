@@ -26,7 +26,7 @@ import org.laetienda.backend.engine.Authorization;
 import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.myapptools.FormBeanInterface;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.lib.utilities.Aes;
 import com.laetienda.lib.utilities.Mistake;
 import com.laetienda.lib.utilities.Tools;
@@ -69,7 +69,7 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 		ldap = new Ldap();
 		
 		try {
-			Dn dn = new Dn("cn=" + groupName, "ou=groups", Settings.LDAP_DOMAIN);
+			Dn dn = new Dn("cn=" + groupName, "ou=groups", Ajustes.LDAP_DOMAIN);
 			findGroup(dn, conn);
 		} catch (LdapInvalidDnException | IOException e) {
 			log.warn("Failed to create group object. $groupName: {} - $error: {}", groupName, e.getMessage());
@@ -103,7 +103,7 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 	}
 	
 	public Group setName(String groupName, LdapConnection conn) throws Exception {
-		String temp = "cn=" + groupName + ",ou=groups," + Settings.LDAP_DOMAIN;
+		String temp = "cn=" + groupName + ",ou=groups," + Ajustes.LDAP_DOMAIN;
 		log.debug("$GroupDn: {}", temp);
 		setLdapEntry(temp, conn);
 		return this;
@@ -375,13 +375,13 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 	
 	public static void main(String[] args) throws Exception {
 		Ldap ldap = new Ldap();
-		String password = new Aes().decrypt(Settings.SYSADMIN_AES_PASS, "sysadmin");
-		LdapConnection conn = ldap.getLdapConnection("uid=sysadmin," + Settings.LDAP_PEOPLE_DN, password);
+		String password = new Aes().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
+		LdapConnection conn = ldap.getLdapConnection("uid=sysadmin," + Ajustes.LDAP_PEOPLE_DN, password);
 		
 		log.debug(conn.isConnected() ? "conn is connected" : "conn is not connected");
 		log.debug(conn.isAuthenticated() ? "conn is authenticated" : "conn is not authenticated");
-		Dn dnGroup = new Dn("cn=sysadmins,ou=Groups," + Settings.LDAP_DOMAIN);
-		Dn dnUser = new Dn("uid=sysadmin", Settings.LDAP_PEOPLE_DN);
+		Dn dnGroup = new Dn("cn=sysadmins,ou=Groups," + Ajustes.LDAP_DOMAIN);
+		Dn dnUser = new Dn("uid=sysadmin", Ajustes.LDAP_PEOPLE_DN);
 		log.debug("dn: {}", dnGroup.getName());
 		log.debug("dnUSer: {}", dnUser.getName());
 		Entry sysadmins = conn.lookup(dnGroup);

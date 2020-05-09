@@ -19,7 +19,7 @@ import org.laetienda.backend.engine.Db;
 import org.laetienda.backend.engine.Ldap;
 
 import com.google.gson.Gson;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
@@ -45,7 +45,7 @@ class DbServiceTest {
 	private LdapConnection connTomcat;
 	
 	@BeforeAll
-	static void init() throws Exception {
+	static void init(){
 		app = new AppContext();
 		app.init();
 	}
@@ -65,10 +65,10 @@ class DbServiceTest {
 		
 		try {
 			em = emf.createEntityManager();
-			String password = new Aes().decrypt(Settings.SYSADMIN_AES_PASS, "sysadmin");
+			String password = new Aes().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
 			authSysadmin = new Authorization("sysadmin", password, tables);
-			password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
-			connTomcat = ldap.getLdapConnection(Settings.LDAP_TOMCAT_DN, password);
+			password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+			connTomcat = ldap.getLdapConnection(Ajustes.LDAP_TOMCAT_DN, password);
 			service = new DbService(emf, authSysadmin, connTomcat);
 		} catch (Exception e) {
 			myCatch(e);

@@ -18,7 +18,7 @@ import org.laetienda.backend.engine.Authorization;
 import org.laetienda.backend.engine.Db;
 import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
@@ -133,7 +133,7 @@ class AccessListTest {
 	private void createComponents() {
 		
 		try {
-			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
+			String password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 			auth = new Authorization("tomcat", password, (AuthTables)appCtx.getAttribute("tables"));
 			assertTrue(ldap.insertLdapEntity(new User("aclUser", "Acl User", "Sn Less", "acluser@mail.com", "passwd1234", "passwd1234", auth.getLdapConnection()),  auth.getLdapConnection()), "Acl User was not created correctly");
 			assertTrue(ldap.insertLdapEntity(new User("aclMember", "Acl Member", "Sn Less", "aclmember@mail.com", "passwd1234", "passwd1234", auth.getLdapConnection()),  auth.getLdapConnection()), "Acl Member was not created correctly");

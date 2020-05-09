@@ -1,6 +1,6 @@
 package com.laetienda.backend.tomcat;
 
-import static com.laetienda.backend.myapptools.Settings.*;
+import static com.laetienda.backend.myapptools.Ajustes.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Authorization;
 import org.laetienda.backend.engine.Db;
 import org.laetienda.backend.engine.Ldap;
+import org.laetienda.backend.engine.Settings;
 
 import com.laetienda.backend.install.InstallData;
 import com.laetienda.backend.myauth.AuthTables;
@@ -34,8 +35,10 @@ public class Load implements ServletContextListener {
 	private Ldap ldap;
 	private AuthTables tables;
 	private EntityManagerFactory emf;
+	private Settings settings;
 
     public Load() {
+    	settings = new Settings();
         db = new Db();
         tables = new AuthTables();
         ldap = new Ldap();
@@ -66,6 +69,7 @@ public class Load implements ServletContextListener {
 			emf = db.createEntityManagerFactory();
 			sc.setAttribute("emf", emf);
 			sc.setAttribute("tables", tables);
+			sc.setAttribute("settings", settings);
 			
 			//for developing porposes the installer will run every time
 			em = emf.createEntityManager();

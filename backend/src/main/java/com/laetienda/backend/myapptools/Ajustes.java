@@ -1,6 +1,6 @@
 package com.laetienda.backend.myapptools;
 
-public final class Settings {
+public final class Ajustes {
 	
 	public static int DB_PORT = 5432;
 	public static String HOSTNAME = "localhost";

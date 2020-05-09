@@ -7,7 +7,7 @@ import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
@@ -34,7 +34,7 @@ public class Authorization {
 	public Authorization(String username, String password, AuthTables tables) {
 
 		try {
-			Dn dn = new Dn("uid=" + username + ",ou=People," + Settings.LDAP_DOMAIN);
+			Dn dn = new Dn("uid=" + username + ",ou=People," + Ajustes.LDAP_DOMAIN);
 			init(dn, password, tables);
 		} catch (LdapInvalidDnException e) {
 			log.error("Failed to create valid Dn from username. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());

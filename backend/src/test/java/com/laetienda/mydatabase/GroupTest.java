@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.lib.utilities.Aes;
@@ -31,7 +31,7 @@ public class GroupTest {
 		Dn dn;
 		Group result = null;
 		try {
-			dn = ldap.buildDn("cn=" + group + ", ou=groups, " + Settings.LDAP_DOMAIN);
+			dn = ldap.buildDn("cn=" + group + ", ou=groups, " + Ajustes.LDAP_DOMAIN);
 			result = new Group(dn, conn);
 			
 			for(Attribute attr : result.getLdapEntry().getAttributes()) {
@@ -112,8 +112,8 @@ public class GroupTest {
 		LdapConnection conn = null;
 
 		try {
-			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
-			conn=ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
+			String password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+			conn=ldap.getLdapConnection(Ajustes.LDAP_ADMIN_USER, password);
 			test.add(conn);
 //			test.addUser("Test Group", "manager", conn);
 //			test.findGroup("Test Group", conn);

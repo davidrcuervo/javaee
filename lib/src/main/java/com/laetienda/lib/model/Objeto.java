@@ -34,15 +34,15 @@ public abstract class Objeto implements Serializable{
 	@Column(name="\"group\"", nullable=true, unique=false)
 	private String group;
 	
-	@OneToOne(cascade=CascadeType.ALL)
+	@OneToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="\"read_acl_id\"", nullable=true, unique=false)
 	private AccessList write;
 	
-	@OneToOne(cascade=CascadeType.ALL)
+	@OneToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="\"write_acl_id\"", nullable=true, unique=false)
 	private AccessList read;
 	
-	@OneToOne(cascade=CascadeType.ALL)
+	@OneToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="\"delete_acl_id\"", nullable=true, unique=false)
 	private AccessList delete;
 	

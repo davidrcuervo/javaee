@@ -7,10 +7,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.backend.json.UserJsonParser;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.repository.UserRepository;
+import com.laetienda.lib.model.UserJson;
 
 public class UserService implements UserRepository {
 	private final static Logger log = LogManager.getLogger(UserService.class);
@@ -48,7 +48,7 @@ public class UserService implements UserRepository {
 		LdapConnection conn = null;
 		
 		try {
-			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
+			conn = ldap.getLdapConnection("uid=" + username + "," + Ajustes.LDAP_PEOPLE_DN, password);
 			result = ldap.findUser(uid, conn);
 		}catch (Exception e) {
 			log.warn("Failed to find user from directory. $uid: {} - $exception: {} -> {}", uid, e.getClass().getSimpleName(), e.getMessage());
@@ -67,7 +67,7 @@ public class UserService implements UserRepository {
 		LdapConnection conn = null;
 		
 		try {
-			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
+			conn = ldap.getLdapConnection("uid=" + username + "," + Ajustes.LDAP_PEOPLE_DN, password);
 			result = new User(newUsername, name, lastname, email, pass1, pass2, conn);
 			ldap.insertLdapEntity(result, conn);
 
@@ -82,12 +82,12 @@ public class UserService implements UserRepository {
 		return result;
 	}
 	
-	public User update(String username, String password, UserJsonParser u) {
+	public User update(String username, String password, UserJson u) {
 		User result = null;
 		LdapConnection conn = null;
 		
 		try {
-			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
+			conn = ldap.getLdapConnection("uid=" + username + "," + Ajustes.LDAP_PEOPLE_DN, password);
 			result = ldap.findUser(u.getUid(), conn);
 			
 			if(u.getCn() != null) result.setCn(u.getCn());
@@ -113,7 +113,7 @@ public class UserService implements UserRepository {
 		LdapConnection conn = null;
 		User user = null;
 		try {
-			conn = ldap.getLdapConnection("uid=" + username + "," + Settings.LDAP_PEOPLE_DN, password);
+			conn = ldap.getLdapConnection("uid=" + username + "," + Ajustes.LDAP_PEOPLE_DN, password);
 			user = ldap.findUser(uid, conn);
 			conn.delete(user.getLdapEntry().getDn());
 			result = ldap.findUser(uid, conn) == null;

@@ -1,18 +1,25 @@
 package com.laetienda.backend.repository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 //import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Db;
 
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
+import com.laetienda.lib.model.AccessList;
 import com.laetienda.lib.model.Objeto;
 import com.laetienda.lib.utilities.Mistake;
 import com.laetienda.lib.utilities.Tools;
@@ -29,6 +36,11 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 	private List<Mistake> errores = new ArrayList<Mistake>();
 	private Tools tools;
 	
+	protected ObjetoRepository() {}
+	
+	protected ObjetoRepository(Objeto o) {
+		this.objeto = o;
+	}
 //	public ObjetoRepository() {
 //		tools = new Tools();
 //		
@@ -124,7 +136,7 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 		}
 	}
 
-	public AccessListRepository getWrite() {
+	public AccessListRepository getWrite() throws IOException {
 		if(writeRepository == null) {
 			writeRepository = new AccessListRepository(objeto.getWrite());
 		}
@@ -135,7 +147,7 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 		objeto.setWrite(write.getAccessList());
 	}
 
-	public AccessListRepository getRead() {
+	public AccessListRepository getRead() throws IOException {
 		if(readRepository == null) {
 			readRepository = new AccessListRepository(objeto.getWrite());
 		}
@@ -146,7 +158,7 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 		objeto.setRead(read.getAccessList());
 	}
 
-	public AccessListRepository getDelete() {
+	public AccessListRepository getDelete() throws IOException {
 		if(deleteRepository == null) {
 			deleteRepository = new AccessListRepository(objeto.getWrite());
 		}
@@ -200,6 +212,45 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 	
 	public List<Mistake> getErrors(){
 		return errores;
+	}
+	
+	protected void merge(Objeto o, EntityManager em, Authorization auth) throws Exception {
+		
+		if(!getOwner().toLowerCase().equals(o.getOwner().toLowerCase())) {
+			setOwner(o.getOwner(), auth.getLdapConnection());
+		}
+		
+		if(!getGroup().toLowerCase().equals(o.getGroup().toLowerCase())){
+			setGroup(o.getGroup(), auth.getLdapConnection());
+		}
+		
+		setRead(mergeAcl(getRead(), o.getRead(), em, auth));
+		setWrite(mergeAcl(getWrite(), o.getWrite(), em, auth));
+		setDelete(mergeAcl(getDelete(), o.getDelete(), em, auth));
+	}
+	
+	private AccessListRepository mergeAcl(AccessListRepository aclR, AccessList json, EntityManager em, Authorization auth) {
+		Db db = new Db();
+		AccessListRepository result = aclR;
+		
+		if(json != null && !aclR.getObjeto().getName().toLowerCase().equals(json.getName().toLowerCase())) {
+			TypedQuery<?> query = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", json.getName());
+			AccessList temp = (AccessList) db.find(query, em, auth);
+			
+			if(temp != null) {
+				try {
+					result = new AccessListRepository(temp);
+				} catch (IOException e) {
+					log.error("It is tested not to be null before");
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	protected void setParentObjeto(Objeto o) {
+		this.objeto = o;
 	}
 	
 	@Deprecated

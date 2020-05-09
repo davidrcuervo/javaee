@@ -1,7 +1,8 @@
 package org.laetienda.backend.engine;
 
-import static com.laetienda.backend.myapptools.Settings.*;
+import static com.laetienda.backend.myapptools.Ajustes.*;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;

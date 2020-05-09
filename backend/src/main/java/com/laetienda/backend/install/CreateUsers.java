@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Ldap;
 
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.lib.utilities.Aes;
 
@@ -23,7 +23,7 @@ public class CreateUsers {
 		
 		User result = ldap.findUser("sysadmin", conn);
 		if(result == null) {
-			String password = new Aes().decrypt(Settings.SYSADMIN_AES_PASS, "sysadmin");
+			String password = new Aes().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
 			result = new User("sysadmin", "SysAdmin", "SnLess", "sysadmin@la-etienda.com", password, password,  conn);
 			ldap.insertLdapEntity(result, conn);
 			
@@ -40,7 +40,7 @@ public class CreateUsers {
 		
 		User result = ldap.findUser("manager", conn);
 		if(result == null) {
-			String password = new Aes().decrypt(Settings.MANAGER_AES_PASS, "manager");
+			String password = new Aes().decrypt(Ajustes.MANAGER_AES_PASS, "manager");
 			result = new User("manager", "Manager", "SnLess", "manager@la-etienda.com", password, password, conn);
 			ldap.insertLdapEntity(result, conn);
 			
@@ -58,7 +58,7 @@ public class CreateUsers {
 		User result = ldap.findUser("tomcat", conn);
 		if(result == null) {
 			
-			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
+			String password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 			result = new User("tomcat", "Tomcat", "SnLess", "tomcat@la-etienda.com", password, password,  conn);
 			ldap.insertLdapEntity(result, conn);
 			

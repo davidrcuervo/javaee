@@ -1,6 +1,6 @@
 package com.laetienda.backend.myldap;
 
-import static com.laetienda.backend.myapptools.Settings.*;
+import static com.laetienda.backend.myapptools.Ajustes.*;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.myapptools.FormBeanInterface;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.lib.utilities.Mistake;
 import com.laetienda.lib.utilities.Tools;
 
@@ -115,7 +115,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 	public User setLdapEntry(LdapConnection conn) throws Exception {
 		log.info("Setting user LDAP entry ...");		
 		try {
-			Dn dn = new Dn("uid=" + uid, Settings.LDAP_PEOPLE_DN);
+			Dn dn = new Dn("uid=" + uid, Ajustes.LDAP_PEOPLE_DN);
 			ldapEntry = conn.lookup(dn);
 			
 			if(ldapEntry == null) {				
@@ -154,7 +154,7 @@ public class User implements Serializable, FormBeanInterface, LdapEntity{
 					addError("uid", "Username can't have more than 64 characters");
 				}
 				
-				if(conn.lookup("uid=" + username + ", ou=people, " + Settings.LDAP_DOMAIN) != null) {
+				if(conn.lookup("uid=" + username + ", ou=people, " + Ajustes.LDAP_DOMAIN) != null) {
 					addError("uid", "Username already exists");
 				}else {
 								

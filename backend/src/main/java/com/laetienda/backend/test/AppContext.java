@@ -15,9 +15,10 @@ import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Authorization;
 import org.laetienda.backend.engine.Db;
 import org.laetienda.backend.engine.Ldap;
+import org.laetienda.backend.engine.Settings;
 
 import com.laetienda.backend.install.InstallData;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.repository.AccessListRepository;
 import com.laetienda.lib.model.AccessList;
@@ -34,11 +35,13 @@ public class AppContext {
 	private Authorization authLdapAdmin, authSysadmin;
 	private EntityManager em = null;
 	private LdapConnection ldapConnectionTomcat;
+	private Settings settings;
 	
 	public AppContext() {
 		attributes = new HashMap<String, Object>();
 		db = new Db();
 		ldap = new Ldap();
+		settings = new Settings();
 	}
 	
 	public void init() {
@@ -51,6 +54,7 @@ public class AppContext {
 			authSysadmin = setSysadminAuthorization();
 			installDatabase();
 			setAllAcl();
+			setAttribute("settings", settings);
 			setAttribute("ldapConnectionTomcat", setTomcatLdapConnection());
 		}catch(Exception e) {
 			log.fatal("Failed to initialize tomcat context.", e);
@@ -68,8 +72,8 @@ public class AppContext {
 		String password;
 		Authorization auth;
 		
-		password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
-		Dn admindn = new Dn(Settings.LDAP_ADMIN_USER);
+		password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+		Dn admindn = new Dn(Ajustes.LDAP_ADMIN_USER);
 		log.info("Admin DN created succesfully. $dn: {}", admindn.getName());
 		auth = new Authorization(admindn, password, tables);
 		log.info("Authorization created succesfully. $user: {}", auth.getUser().getLdapEntry().getDn().getName());
@@ -81,7 +85,7 @@ public class AppContext {
 		String password;
 		Authorization auth;
 		
-		password = new Aes().decrypt(Settings.SYSADMIN_AES_PASS, "sysadmin");
+		password = new Aes().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
 		auth = new Authorization("sysadmin", password, tables);
 				
 		return auth;
@@ -104,8 +108,8 @@ public class AppContext {
 	}
 	
 	private LdapConnection setTomcatLdapConnection() throws Exception {
-		String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
-		return ldap.getLdapConnection(Settings.LDAP_TOMCAT_DN, password);
+		String password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+		return ldap.getLdapConnection(Ajustes.LDAP_TOMCAT_DN, password);
 		
 	}
 	

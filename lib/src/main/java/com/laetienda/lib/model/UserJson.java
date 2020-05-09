@@ -1,6 +1,6 @@
-package com.laetienda.backend.json;
+package com.laetienda.lib.model;
 
-public class UserJsonParser {
+public class UserJson {
 	
 	private String uid;
 	private String cn;
@@ -44,8 +44,4 @@ public class UserJsonParser {
 	public void setPass2(String pass2) {
 		this.pass2 = pass2;
 	}
-	
-	
-	
-	
 }

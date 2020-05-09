@@ -1,5 +1,6 @@
 package com.laetienda.backend.repository;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.persistence.*;
@@ -7,6 +8,8 @@ import javax.persistence.*;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Db;
 
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
@@ -17,6 +20,7 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 	private static final Logger log = LogManager.getLogger(ComponentRepository.class);
 
 	private Component component;
+	private Db db;
 	
 	public ComponentRepository(Component component) {
 		this.component = component;
@@ -28,6 +32,19 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 		setName(name, em);
 		setDescription(description);
 		setJavaClass(javaClass);
+	}
+	
+	public ComponentRepository(String name, EntityManager em, Authorization auth) throws IOException {
+		db = new Db();
+		TypedQuery<?> query = em.createNamedQuery("Component.findByName", Component.class).setParameter("name", name.toLowerCase());
+		
+		Component c = (Component) db.find(query, em, auth);
+		
+		if(c == null) {
+			throw new IOException("Component does not exist. $componentName: " + name);
+		}else {
+			this.setObjeto(c);
+		}
 	}
 	
 	public String getDescription() {
@@ -49,7 +66,7 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 	}
 
 	private void setName(String name, EntityManager em) {
-		component.setName(name);
+		component.setName(name.toLowerCase());
 		
 		if(name == null || name.isEmpty()) {
 			log.warn("Failed to set Component name, it can't be empty");
@@ -58,7 +75,7 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 			log.warn("Failed to set Component Name, it can't have more than 254 characters.");
 			addError("Name", "Failed to set Access List Name, it can't have more than 254 characters.");
 		}else {
-			List<ComponentRepository> result = em.createNamedQuery("Component.findByName", ComponentRepository.class).setParameter("name", name).getResultList();
+			List<ComponentRepository> result = em.createNamedQuery("Component.findByName", ComponentRepository.class).setParameter("name", name.toLowerCase()).getResultList();
 			
 			if(result.size() > 0) {
 				log.warn("Failed to set Component name, it can't be empty");
@@ -72,9 +89,20 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 	public String getJavaClassName() {
 		return component.getJavaClassName();
 	}
+	
+	public void setJavaClass(String classname) throws IOException {
+		try {
+			Objeto clazz = (Objeto) Class.forName(classname).getConstructor().newInstance();
+			setJavaClass(clazz.getClass());
+		} catch (Exception e) {
+			String message = String.format("Failed to create class from classname. $classname: %s - $Exception: %s -> %s", classname, e.getClass().getSimpleName(), e.getMessage());
+			log.warn(message);
+			log.debug(message, e);
+			throw new IOException(message);
+		}
+	}
 
 	private void setJavaClass(Class<?> javaClass) {
-		
 		
 		try {
 			Object o = Class.forName(javaClass.getName()).getDeclaredConstructor().newInstance();
@@ -91,6 +119,23 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 			log.debug("Failed to set javaClassName", e);
 		}
 	}
+	
+	public void merge(Component jsonc, EntityManager em, Authorization auth) throws Exception {
+		super.merge(jsonc, em, auth);
+		
+		if(jsonc.getDescription() != null) {
+			setDescription(jsonc.getDescription());
+		}
+		
+		if(!jsonc.getName().toLowerCase().equals(getName())) {
+			setName(jsonc.getName(), em);
+		}
+		
+		if(jsonc.getJavaClassName() != null) {
+			setJavaClass(jsonc.getJavaClassName());
+		}
+	}
+	
 
 	@Override
 	public String getName() {
@@ -104,6 +149,7 @@ public class ComponentRepository extends ObjetoRepository implements RepositoryI
 	@Override
 	public void setObjeto(Objeto component) {
 		this.component = (Component)component;
+		super.setParentObjeto(this.component);
 		
 	}
 }

@@ -1,4 +1,4 @@
-package com.laetienda.frontend.engine;
+package org.laetienda.backend.engine;
 
 import java.io.File;
 import java.io.FileReader;
@@ -8,35 +8,18 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 public class Settings {
 	private final static Logger log = LogManager.getLogger(Settings.class);
 	
-	Properties properties;
+	private Properties properties;
 	
 	public Settings() {
-		properties = setDefaults();
-		File file = new File(getClass().getClassLoader().getResource("frontend.properties").getFile());
+		properties = new Properties();
+		File file = new File(getClass().getClassLoader().getResource("backend.properties").getFile());
 		loadFile(file);
 	}
 	
-	public Settings(File file) {
-		properties = setDefaults();
-		loadFile(file);
-	}
-	
-	private Properties setDefaults() {
-		Properties p = new Properties();
-		
-		//DEFAULT SETTINGS
-		p.put("backend.url", "http://localhost:8080/backend");
-		p.put("backend.username", "tomcat");
-		p.put("backend.password", "passwd");
-		p.put("backend.db.path", "/dbApi");
-		return p;
-	}
-	
-	private void loadFile(File file) {
+	public void loadFile(File file) {
 		try {
 			if(file.exists() && file.canRead()) {
 				FileReader fReader= new FileReader(file);
@@ -54,14 +37,5 @@ public class Settings {
 	
 	public String get(String key) {
 		return properties.getProperty(key);
-	}
-	
-	public static void main (String[] args) {
-		
-		Settings settings = new Settings();
-		log.debug("$bakend.url: {}", settings.get("backend.url"));
-		log.debug("$bakend.username: {}", settings.get("backend.username"));
-		log.debug("$bakend.password: {}", settings.get("backend.password"));
-		
 	}
 }

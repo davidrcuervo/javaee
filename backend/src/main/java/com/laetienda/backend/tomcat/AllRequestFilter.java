@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.laetienda.backend.engine.Ldap;
 
 import com.google.gson.Gson;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.lib.utilities.Aes;
 import com.laetienda.lib.utilities.Mistake;
 
@@ -50,7 +50,7 @@ public class AllRequestFilter implements Filter {
 		LdapConnection connTomcat = null;
 		
 		try {
-			String password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
+			String password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 			connTomcat = ldap.getLdapConnection("tomcat", password);
 			req.setAttribute("connTomcat", connTomcat);
 			chain.doFilter(request, response);

@@ -20,7 +20,7 @@ import org.laetienda.backend.engine.Db;
 import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.install.InstallData;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.lib.utilities.Aes;
 
@@ -43,8 +43,8 @@ class UserTest {
 		InstallData installer = new InstallData();
 		
 		try {
-			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
-			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
+			String password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+			conn = ldap.getLdapConnection(Ajustes.LDAP_ADMIN_USER, password);
 			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
 			installer.createObjects(em, conn, new Authorization(conn));
@@ -68,8 +68,8 @@ class UserTest {
 		ldap = new Ldap();
 		userConn = null;
 		try {
-			password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
-			tomcatConn = ldap.getLdapConnection(Settings.LDAP_TOMCAT_DN, password);
+			password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+			tomcatConn = ldap.getLdapConnection(Ajustes.LDAP_TOMCAT_DN, password);
 		} catch (Exception e) {
 			myCatch(e);
 		}
@@ -93,7 +93,7 @@ class UserTest {
 			assertNull(ldap.findUser("testUser", tomcatConn), "At this point test user should not exist.");
 			User user = new User("testuser", "Test", "Test", "test@email.com", "passwd1234", "passwd1234", tomcatConn);
 			ldap.insertLdapEntity(user, tomcatConn);
-			userConn = ldap.getLdapConnection("uid=testuser," + Settings.LDAP_PEOPLE_DN, "passwd1234");
+			userConn = ldap.getLdapConnection("uid=testuser," + Ajustes.LDAP_PEOPLE_DN, "passwd1234");
 			assertNotNull(ldap.findUser("testuser", tomcatConn));
 		} catch (Exception e) {
 			myCatch(e);

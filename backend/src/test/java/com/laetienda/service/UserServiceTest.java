@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.service.UserService;
 import com.laetienda.lib.utilities.Aes;
@@ -27,7 +27,7 @@ class UserServiceTest {
 		service = new UserService();
 		
 		try {
-			password = new Aes().decrypt(Settings.TOMCAT_AES_PASS, "tomcat");
+			password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 		} catch (GeneralSecurityException e) {
 			fail("Failed to decrypt tomcat password.");
 		}
@@ -48,9 +48,9 @@ class UserServiceTest {
 	}
 
 	private void createUser() {
-		assertNull(service.findByUsername(Settings.LDAP_TOMCAT_DN, password, "testuser"));
-		assertNotNull(service.add(Settings.LDAP_TOMCAT_DN, password, "testuser", "Test User", "SnLess", "test@mail.com", "passwd1234", "passwd1234"));
-		assertNotNull(service.findByUsername(Settings.LDAP_TOMCAT_DN, password, "testuser"));
+		assertNull(service.findByUsername(Ajustes.LDAP_TOMCAT_DN, password, "testuser"));
+		assertNotNull(service.add(Ajustes.LDAP_TOMCAT_DN, password, "testuser", "Test User", "SnLess", "test@mail.com", "passwd1234", "passwd1234"));
+		assertNotNull(service.findByUsername(Ajustes.LDAP_TOMCAT_DN, password, "testuser"));
 	}
 
 }

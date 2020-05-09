@@ -1,6 +1,6 @@
 package org.laetienda.backend.engine;
 
-import static com.laetienda.backend.myapptools.Settings.*;
+import static com.laetienda.backend.myapptools.Ajustes.*;
 
 import java.io.IOException;
 import java.util.ArrayList;

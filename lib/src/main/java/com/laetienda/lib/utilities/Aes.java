@@ -159,8 +159,8 @@ public class Aes {
 	    
 //		final String USERNAME = "web";
 //		String password = "www.myself.com";
-		final String username = "tomcat";
-		String password = "T5UyVYjdMRPr9dqY";
+		final String username = "frontend";
+		String password = "biyUKai1oAVoxYuvlbU9";
 		
 		
 		//Example of hashing a password

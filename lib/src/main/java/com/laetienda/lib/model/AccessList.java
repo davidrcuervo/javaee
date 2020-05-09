@@ -66,4 +66,20 @@ public class AccessList extends Objeto implements Serializable{
 	public void setGroups(List<String> groups) {
 		this.groups = groups;
 	}
+	
+	public void addUser(String username) {
+		if(users == null) {
+			users = new ArrayList<String>();
+		}
+		
+		users.add(username);
+	}
+	
+	public void addGroup(String groupname) {
+		if(groups == null) {
+			groups = new ArrayList<String>();
+		}
+		
+		groups.add(groupname);
+	}
 }

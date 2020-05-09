@@ -45,18 +45,22 @@ public class Mistake {
 	
 	private void setStatus(int status) {
 		this.status = Integer.toString(status);
+		log.debug("$ErrorCode: {}", status);
 	}
 
 	private void setPointer(String pointer) {
 		this.pointer = pointer;
+		log.debug("$ErrorPointer: {}", pointer);
 	}
 
 	private void setDetail(String detail) {
 		this.detail = detail;
+		log.debug("$ErrorDetail: {}", detail);
 	}
 
 	private void setTitle(String title) {
 		this.title = title;
+		log.debug("$ErrorTittle: {}", title);
 	}
 
 	public String getStatus() {

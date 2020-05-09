@@ -19,7 +19,7 @@ import org.laetienda.backend.engine.Db;
 import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.install.InstallData;
-import com.laetienda.backend.myapptools.Settings;
+import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.repository.AccessListRepository;
 import com.laetienda.lib.utilities.Aes;
@@ -67,8 +67,8 @@ class InstallTest {
 		
 		try {
 			em = emf.createEntityManager();
-			String password = new Aes().decrypt(Settings.LDAP_ADIN_AES_PASSWORD, Settings.LDAP_ADMIN_USER);
-			conn = ldap.getLdapConnection(Settings.LDAP_ADMIN_USER, password);
+			String password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+			conn = ldap.getLdapConnection(Ajustes.LDAP_ADMIN_USER, password);
 			auth = new Authorization(conn);
 			installer.createObjects(em, conn, auth);
 			testAcls(em, conn);

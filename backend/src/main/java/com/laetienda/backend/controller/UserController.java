@@ -14,9 +14,9 @@ import java.net.URLEncoder;
 import java.util.stream.Collectors;
 import java.net.URLDecoder;
 import com.google.gson.Gson;
-import com.laetienda.backend.json.UserJsonParser;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.service.UserService;
+import com.laetienda.lib.model.UserJson;
 import com.laetienda.lib.utilities.Aes;
 
 public class UserController extends HttpServlet {
@@ -54,8 +54,8 @@ public class UserController extends HttpServlet {
     @Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
 
-		//https://<server-name>:<port>/context-path/url-patter/pathParts[0]/pathParts[1]/pathParts[2]/....
-		//https://<server-name>:<port>/backedn/user/pathParts[0]/pathParts[1]/pathParts[2]/....
+		//https://<server-name>:<port>/context-path/url-pattern/pathParts[0]/pathParts[1]/pathParts[2]/....
+		//https://<server-name>:<port>/backend/user/pathParts[0]/pathParts[1]/pathParts[2]/....
 		try {
 			build(req, res);	
 			//user -> list all users
@@ -101,7 +101,7 @@ public class UserController extends HttpServlet {
 				
 				String requestData = req.getReader().lines().collect(Collectors.joining());
 				log.debug("$requestData: {}", requestData);
-				UserJsonParser u = gson.fromJson(requestData, UserJsonParser.class);
+				UserJson u = gson.fromJson(requestData, UserJson.class);
 									
 				log.debug("uid: {}", u.getUid());
 				log.debug("cn: {}", u.getCn());
@@ -140,7 +140,7 @@ public class UserController extends HttpServlet {
 				
 				String requestData = req.getReader().lines().collect(Collectors.joining());
 				log.debug("$jsonData: {}", requestData);
-				UserJsonParser u = gson.fromJson(requestData, UserJsonParser.class);
+				UserJson u = gson.fromJson(requestData, UserJson.class);
 				User user = service.update(username, password, u);
 				
 				if(user == null) {
@@ -174,7 +174,7 @@ public class UserController extends HttpServlet {
 				
 				String requestData = req.getReader().lines().collect(Collectors.joining());
 				log.debug("$jsonData: {}", requestData);
-				UserJsonParser u = gson.fromJson(requestData, UserJsonParser.class);
+				UserJson u = gson.fromJson(requestData, UserJson.class);
 				
 				if(service.delete(username, password, u.getUid())) {
 					res.setStatus(HttpServletResponse.SC_OK);

@@ -1,11 +1,15 @@
 package com.laetienda.backend.repository;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.*;
 
 import org.apache.logging.log4j.Logger;
+import org.laetienda.backend.engine.Authorization;
+import org.laetienda.backend.engine.Db;
 
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
@@ -20,6 +24,7 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 	private static Logger log = LogManager.getLogger(AccessListRepository.class);
 	
 	private AccessList accessList;
+	private Db db;
 	
 	/**
 	 * 
@@ -71,8 +76,27 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 		setDescription(description);
 	}
 	
-	public AccessListRepository(AccessList acl) {
-		this.accessList = acl;
+	public AccessListRepository(AccessList acl) throws IOException {
+		super(acl);
+		if(acl == null) {
+			log.warn("Input error. AccessList object can't be null.");
+			throw new IOException("Input error. AccessList object can't be null.");
+		}else {			
+			this.accessList = acl;
+		}
+	}
+	
+	public AccessListRepository(String name, EntityManager em, Authorization auth) throws IOException {
+		db = new Db();
+		TypedQuery<?> query = em.createNamedQuery("AccessList.findByName", AccessList.class).setParameter("name", name);
+		AccessList acl = (AccessList)db.find(query, em, auth);
+		
+		if(acl == null) {
+			throw new IOException("Failed to find objeto, requested name does not exist or user does not have rihgts to access Access List. $aclName: " + name) ;
+		}else {
+			setObjeto(acl);
+		}
+		
 	}
 	
 	private void setDefaultObjeto(User owner, Group group, LdapConnection conn) {
@@ -184,10 +208,14 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 			addError("User", "User can't be removed because it is the owner of the acl");
 			log.warn("User, {}, can't be removed because it is the owner of the acl", user.getUid());
 		}else if(accessList.getUsers().contains(user.getUid())) {
-			accessList.getUsers().remove(user.getUid());
+			removeUser(user.getUid());
 		}else {
 			log.warn("User, {}, can't be removed because does not exist in the acl.", user.getUid());
 		}
+	}
+	
+	private void removeUser(String user) {
+		accessList.getUsers().remove(user);
 	}
 	
 	public void addGroup(String strGroup, LdapConnection conn) throws Exception {
@@ -224,9 +252,50 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 			addError("Group", "Group can't be removed because it is the owner of the acl. $group: " + group.getGroupName());
 			log.warn("User, {}, can't be removed because it is the owner of the acl: {}", group.getGroupName(), getName());
 		}else if(accessList.getGroups().contains(group.getGroupName())) {
-			accessList.getGroups().remove(group.getGroupName());
+			removeGroup(group.getGroupName());
 		}else {
 			log.warn("Group, {}, can't be removed because does not exist in the acl: {}", group.getGroupName(), getName());
+		}
+	}
+	
+	private void removeGroup(String group) {
+		accessList.getGroups().remove(group);
+	}
+
+	public void merge(AccessList aclJson, EntityManager em, Authorization auth) throws Exception {
+		
+		super.merge(aclJson, em, auth);
+		
+		if(!getDescription().equals(aclJson.getDescription())) {
+			setDescription(aclJson.getDescription());
+		}
+		
+		for(String user : aclJson.getUsers()) {
+			if(!getObjeto().getUsers().contains(user)) {	
+				addUser(user, auth.getLdapConnection());
+			}
+		}
+		
+		Iterator<String> usersIterator = getObjeto().getUsers().iterator();
+		while(usersIterator.hasNext()) {
+			String user = usersIterator.next();
+			if(!aclJson.getUsers().contains(user)) {
+				usersIterator.remove();
+			}
+		}
+		
+		for(String group : aclJson.getGroups()) {
+			if(!getObjeto().getGroups().contains(group)) {
+				addGroup(group, auth.getLdapConnection());
+			}
+		}
+		
+		Iterator<String> groupIterator = getObjeto().getGroups().iterator();
+		while(groupIterator.hasNext()) {
+			String group = groupIterator.next();
+			if(!aclJson.getGroups().contains(group)) {
+				groupIterator.remove();
+			}
 		}
 	}
 	
@@ -237,6 +306,7 @@ public class AccessListRepository extends ObjetoRepository implements Repository
 	@Override
 	public void setObjeto(Objeto objeto) {
 		accessList = (AccessList)objeto;
+		super.setParentObjeto(this.accessList);
 	}
 	
 	public AccessList getObjeto() {
