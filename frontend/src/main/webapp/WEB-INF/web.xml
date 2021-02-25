@@ -2,7 +2,10 @@
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
 
   <display-name>Frontend</display-name>
-  
+  <listener>
+  	<listener-class>com.laetienda.frontend.tomcat.Load</listener-class>
+  </listener>
+   
   <servlet>
   	<servlet-name>home</servlet-name>
   	<jsp-file>/WEB-INF/jsp/home/frontendHome.jsp</jsp-file>
@@ -25,11 +28,44 @@
   	<servlet-name>User</servlet-name>
   	<servlet-class>com.laetienda.frontend.controller.UserController</servlet-class>
   </servlet>
+  <servlet>
+  	<description>
+  	</description>
+  	<display-name>Template</display-name>
+  	<servlet-name>Template</servlet-name>
+  	<servlet-class>com.laetienda.frontend.controller.TemplateController</servlet-class>
+  </servlet>
+  <servlet>
+  	<description>
+  	Redirects to application</description>
+  	<display-name>Application</display-name>
+  	<servlet-name>Application</servlet-name>
+  	<servlet-class>com.laetienda.frontend.controller.ApplicationController</servlet-class>
+  </servlet>
+  <servlet>
+  	<description>
+  	</description>
+  	<display-name>Settings</display-name>
+  	<servlet-name>Settings</servlet-name>
+  	<servlet-class>com.laetienda.frontend.controller.SettingsController</servlet-class>
+  </servlet>
   <servlet-mapping>
   	<servlet-name>User</servlet-name>
   	<url-pattern>/signup</url-pattern>
   	<url-pattern>/login</url-pattern>
   	<url-pattern>/logout</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>Template</servlet-name>
+  	<url-pattern>/template/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>Application</servlet-name>
+  	<url-pattern>/app/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>Settings</servlet-name>
+  	<url-pattern>/settings/*</url-pattern>
   </servlet-mapping>
 
   <filter>
@@ -40,4 +76,46 @@
   	<filter-name>FilterForAll</filter-name>
   	<url-pattern>/*</url-pattern>
   </filter-mapping>
+  <filter>
+  	<filter-name>FilterPath</filter-name>
+  	<filter-class>com.laetienda.lib.tomcat.FilterPath</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>FilterPath</filter-name>
+  	<url-pattern>/template/*</url-pattern>
+  	<url-pattern>/settings/*</url-pattern>
+  </filter-mapping>
+  <filter>
+  	<filter-name>pathParts</filter-name>
+  	<filter-class>com.laetienda.lib.tomcat.FilterPath</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>pathParts</filter-name>
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <security-role>
+  	<description>all authenticated users</description>
+  	<role-name>users</role-name>
+  </security-role>
+  <security-constraint>
+  	<web-resource-collection>
+  		<web-resource-name>users</web-resource-name>
+  		<url-pattern>/settings/user</url-pattern>
+  	</web-resource-collection>
+  	<auth-constraint>
+  		<role-name>users</role-name></auth-constraint>
+  	<user-data-constraint>
+  		<transport-guarantee>NONE</transport-guarantee>
+  	</user-data-constraint>
+  </security-constraint>
+  <login-config>
+  	<!-- <auth-method>BASIC</auth-method> -->
+  	 
+  	<auth-method>FORM</auth-method>
+  	<form-login-config>
+  		<form-login-page>/WEB-INF/jsp/user/login.jsp</form-login-page>
+  		<form-error-page>/WEB-INF/jsp/user/loginError.jsp</form-error-page>
+  	</form-login-config>
+	
+	</login-config>
 </web-app>

@@ -9,16 +9,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import com.laetienda.frontend.engine.Settings;
-import com.laetienda.frontend.engine.WebEngine;
+import com.laetienda.lib.tomcat.WebEngine;
 
-/**
- * Servlet Filter implementation class FilterForAll
- */
+
 public class FilterForAll implements Filter {
 	
-	private Settings settings;
-
     public FilterForAll() {
 
     }
@@ -36,7 +31,7 @@ public class FilterForAll implements Filter {
 	}
 
 	public void init(FilterConfig fConfig) throws ServletException {
-		settings = (Settings)fConfig.getServletContext().getAttribute("settings");
+
 	}
 
 }

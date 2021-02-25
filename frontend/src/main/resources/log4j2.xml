@@ -21,10 +21,13 @@
 		
 	</Appenders>
 	<Loggers>
-		<Logger name="com.laetienda" level="debug" additivity="false">
-		<!-- <AppenderRef ref="errorFile"></AppenderRef> -->
-      	<AppenderRef ref="Console"></AppenderRef>
-	</Logger>
+		<Logger name="com.laetienda.frontend" level="debug" additivity="false">
+			<!-- <AppenderRef ref="errorFile"></AppenderRef> -->
+	      	<AppenderRef ref="Console"></AppenderRef>
+		</Logger>
+		<logger name="com.laetienda.lib" level="debug" additivity="false">
+			<AppenderRef ref="Console"></AppenderRef>
+		</logger> 
     <!--
     <Logger name="com.laetienda" level="debug" additivity="false">
       <AppenderRef ref="Console"></AppenderRef>
