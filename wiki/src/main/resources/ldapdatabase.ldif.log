@@ -1,0 +1,9 @@
+# Define top-level entry
+#!RESULT ERROR
+#!CONNECTION ldap://localhost:10389
+#!DATE 2021-02-03T19:50:07.729
+#!ERROR [LDAP: error code 65 - OBJECT_CLASS_VIOLATION: failed for MessageType : ADD_REQUEST Message ID : 17     Add Request : Entry     dn: dc=example,dc=com     objectClass: dcObject     dc: mycompany : ERR_60 Entry dc=example,dc=com does not contain a STRUCTURAL ObjectClass]
+dn: dc=example,dc=com
+objectClass: dcObject
+dc: mycompany
+

@@ -15,7 +15,7 @@ public class Settings {
 	
 	public Settings() {
 		properties = new Properties();
-		File file = new File(getClass().getClassLoader().getResource("backend.properties").getFile());
+		File file = new File(getClass().getClassLoader().getResource("frontend.properties").getFile());
 		loadFile(file);
 	}
 	

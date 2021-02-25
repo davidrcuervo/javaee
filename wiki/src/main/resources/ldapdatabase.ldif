@@ -1,0 +1,41 @@
+# Define top-level entry
+dn: dc=example,dc=com
+objectClass: dcObject
+dc:mycompany
+
+# Define an entry to contain people
+# searches for users are based on this entry
+dn: ou=people,dc=example,dc=com
+objectClass: organizationalUnit
+ou: people
+
+# Define a user entry for tomcat user
+dn: uid=tomcat,ou=people,dc=example,dc=com
+objectClass: inetOrgPerson
+uid: tomcat
+sn: Snless
+cn: tomcat
+mail: tomcat@example.com
+userPassword: T5UyVYjdMRPr9dqY
+
+# Define a user entry for manager user
+dn: uid=manager,ou=people,dc=example,dc=com
+objectClass: inetOrgPerson
+uid: manager
+sn: Snless
+cn: manager
+mail: manager@example.com
+userPassword: 9LsU78NkTNEd4sKk
+
+# Define an entry to contain LDAP groups
+# searches for roles are based on this entry
+dn: ou=groups,dc=example,dc=com
+objectClass: organizationalUnit
+ou: groups
+
+# Define an entry for registered users
+dn: cn=users,ou=groups,dc=example,dc=com
+objectClass: groupOfUniqueNames
+cn: users
+uniqueMember: uid=tomcat,ou=people,dc=example,dc=com
+uniqueMember: uid=manager,ou=people,dc=example,dc=com
