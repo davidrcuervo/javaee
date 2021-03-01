@@ -13,8 +13,14 @@
 
 <c:set scope="request" var="content">
 	<h2>Hello World!!</h2>
+	
+	<c:if test="${not empty pageContext.request.userPrincipal}">
+		<div>User is Logged In</div>
+	</c:if>
+	
+	<c:if test="${empty pageContext.request.userPrincipal}">
+		<div>User is not Logged In</div>
+	</c:if>
 </c:set>
-
-
 
 <jsp:include page="/WEB-INF/jsp/template/htmlTemplate.jsp"></jsp:include>

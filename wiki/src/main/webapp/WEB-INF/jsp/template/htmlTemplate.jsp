@@ -31,6 +31,10 @@
 </head>
 <body>
 	<header><jsp:getProperty name="homeTemplate" property="menu" /></header>
-	<main>${content}</main>
+	<main>
+		<div class="container">
+			<c:out value="${content}" escapeXml="false" />
+		</div>
+	</main>
 </body>
 </html>

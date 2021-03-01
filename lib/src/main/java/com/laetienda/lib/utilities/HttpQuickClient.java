@@ -29,6 +29,10 @@ public class HttpQuickClient {
 	private Header authHeader;
 	private List<NameValuePair> postParameters;
 	
+	public HttpQuickClient() {
+		postParameters = new ArrayList<>();
+	}
+
 	public void setAuthHeader(String username, String password) {
 		String decodedUserPassword = username + ":" + password;
 		String codedUserPassword = StringUtils.newStringUtf8(Base64.encodeBase64(decodedUserPassword.getBytes()));

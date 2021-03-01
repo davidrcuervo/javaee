@@ -1,7 +1,7 @@
 # Define top-level entry
-dn: dc=example,dc=com
-objectClass: dcObject
-dc:mycompany
+#dn: dc=example,dc=com
+#objectClass: dcObject
+#dc:mycompany
 
 # Define an entry to contain people
 # searches for users are based on this entry

@@ -38,7 +38,7 @@ public class WebEngine {
 	}
 
 	
-	public String href(String uri) {
+	private String hrefbuilder(String uri, String app) {
 		String result = req.getScheme() + "://" + req.getServerName();
 		
 		if(
@@ -50,7 +50,11 @@ public class WebEngine {
 			result += ":" + req.getServerPort();
 		}
 		
-		result += req.getContextPath();
+		if(app == null) {
+			result += req.getContextPath();
+		}else {
+			result += app;
+		}
 		
 		if(uri == null || uri.isBlank()) {
 			log.warn("Request url is null or empty");
@@ -62,6 +66,14 @@ public class WebEngine {
 		}
 		
 		return result;
+	}
+	
+	public String href(String uri) {
+		return hrefbuilder(uri, null);
+	}
+	
+	public String apphref(String uri, String app) {
+		return hrefbuilder(uri, "/" + app);
 	}
 	
 	public void setUriStyle(String style) {

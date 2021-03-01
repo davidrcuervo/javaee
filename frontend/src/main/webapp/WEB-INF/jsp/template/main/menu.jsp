@@ -14,7 +14,7 @@
         <a class="nav-link" href="${web.href('/app/store')}"> Store</a>
       </li>
       <li class="nav-item ${web.active == 'wiki' ? 'active' : '' }">
-        <a class="nav-link" href="${web.href('/app/wiki')}">Wiki</a>
+        <a class="nav-link" href="${web.apphref('/home', 'wiki')}">Wiki</a>
       </li>
       <li class="nav-item dropdown ${web.active == 'settings' ? 'active' : '' }">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" title="Settings" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -22,9 +22,12 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="${web.href('/settings/user')}">User Settings</a>
-          <a class="dropdown-item" href="${web.href('/app/wiki/secure')}">Wiki Settings</a>
+          <a class="dropdown-item" href="${web.apphref('/secure', 'wiki')}">Wiki Settings</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="#">Something else here</a>
+          <c:if test="${not empty pageContext.request.userPrincipal}">
+          	<a class="dropdown-item" href="${web.href('/logout')}">LogOut</a>
+          </c:if>
         </div>
       </li>
     </ul>

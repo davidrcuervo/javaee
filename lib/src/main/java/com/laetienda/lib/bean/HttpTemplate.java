@@ -83,6 +83,12 @@ public class HttpTemplate {
 		return httpClient.post(this.url + this.uriMenu);
 	}
 	
+	public String getQuickTemplate(String uri) {
+		log.debug("getting quick template. $url: {}", this.url + uri);
+		return httpClient.post(this.url + uri);
+//		return this.url + uri;
+	}
+	
 	public String getUrl() {
 		return url;
 	}

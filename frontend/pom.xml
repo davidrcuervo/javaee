@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.laetienda</groupId>
-  <artifactId>frontend0</artifactId>
+  <artifactId>frontend</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
 
@@ -36,11 +36,6 @@
     </dependency>
     <dependency>
     	<groupId>org.apache.logging.log4j</groupId>
-    	<artifactId>log4j-1.2-api</artifactId>
-    	<version>2.14.0</version>
-    </dependency>
-    <dependency>
-    	<groupId>org.apache.logging.log4j</groupId>
     	<artifactId>log4j-slf4j-impl</artifactId>
     	<version>2.14.0</version>
     </dependency>
@@ -53,11 +48,6 @@
     	<groupId>org.apache.commons</groupId>
     	<artifactId>commons-configuration2</artifactId>
     	<version>2.7</version>
-    </dependency>
-    <dependency>
-    	<groupId>javax.servlet.jsp.jstl</groupId>
-    	<artifactId>javax.servlet.jsp.jstl-api</artifactId>
-    	<version>1.2.2</version>
     </dependency>
     <dependency>
     	<groupId>javax.el</groupId>
@@ -78,6 +68,16 @@
     	<groupId>com.laetienda</groupId>
     	<artifactId>lib</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.logging.log4j</groupId>
+    	<artifactId>log4j-api</artifactId>
+    	<version>2.14.0</version>
+    </dependency>
+    <dependency>
+    	<groupId>javax.servlet</groupId>
+    	<artifactId>javax.servlet-api</artifactId>
+    	<version>3.1.0</version>
     </dependency>
   </dependencies>
 
