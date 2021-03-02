@@ -5,6 +5,10 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+  <context-param>
+  	<param-name>isLog4jAutoInitializationDisabled</param-name>
+  	<param-value>true</param-value>
+  </context-param>
   <filter>
   	<filter-name>WebFilter</filter-name>
   	<display-name>WebFilter</display-name>
@@ -18,7 +22,7 @@
   <listener>
   	<listener-class>com.laetienda.wiki.tomcat.Load</listener-class>
   </listener>
-  
+
   <servlet>
   	<servlet-name>home</servlet-name>
   	<jsp-file>/WEB-INF/jsp/home/index.jsp</jsp-file>

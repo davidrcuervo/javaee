@@ -24,7 +24,7 @@
   <servlet-mapping>
   	<servlet-name>logout</servlet-name>
   	<url-pattern>/logout</url-pattern>
-  </servlet-mapping><!--Template Servlet-->
+  </servlet-mapping><!--Template Servlet-->  
   <servlet>
   	<description>
   	</description>
@@ -35,14 +35,14 @@
   <servlet-mapping>
   	<servlet-name>Template</servlet-name>
   	<url-pattern>/template/*</url-pattern>
-  </servlet-mapping><!--ForAll filter (WebEngine bean)-->
+  </servlet-mapping> <!--ForAll filter (WebEngine bean)-->
   <filter>
     <filter-name>FilterForAll</filter-name>
     <filter-class>com.laetienda.frontend.tomcat.FilterForAll</filter-class>
   </filter>
   <filter-mapping>
     <filter-name>FilterForAll</filter-name>
-    <url-pattern>/*</url-pattern>
+    <url-pattern>/*</url-pattern> 
   </filter-mapping><!--PathParts filter-->
   <filter>
   	<filter-name>pathParts</filter-name>
@@ -75,4 +75,8 @@
   	</form-login-config>
 	
 	</login-config>
+  <context-param>
+  	<param-name>isLog4jAutoInitializationDisabled</param-name>
+  	<param-value>true</param-value>
+  </context-param>
 </web-app>

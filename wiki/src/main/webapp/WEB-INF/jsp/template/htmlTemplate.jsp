@@ -3,13 +3,13 @@
     pageEncoding="UTF-8"%>
 <%@ page isELIgnored="false" %>
 
-<jsp:useBean id="homeTemplate" class="com.laetienda.lib.bean.HttpTemplate" scope="request">
-	<jsp:setProperty name="homeTemplate" property="url" value="${settings.get('frontend.template.main.url') }" />
-	<jsp:setProperty name="homeTemplate" property="title" value="${web.title == null ? 'wiki' : web.title}" />
-	<jsp:setProperty name="homeTemplate" property="uriMenu" value="/menu" />
-	<jsp:setProperty name="homeTemplate" property="uriHeader" value="/header" />
-	<jsp:setProperty name="homeTemplate" property="active" value="wiki" />
-</jsp:useBean>
+<jsp:useBean id="homeTemplate" class="com.laetienda.lib.bean.HttpTemplate" scope="request"></jsp:useBean>
+
+<c:set target="${homeTemplate}" property="url" value="${settings.get('frontend.template.main.url') }" />
+<c:set target="${homeTemplate}" property="title" value="${settings.get('frontend.template.main.url') }" />
+<c:set target="${homeTemplate}" property="uriMenu" value="/menu" />
+<c:set target="${homeTemplate}" property="uriHeader" value="/header" />
+<c:set target="${homeTemplate}" property="active" value="wiki" />
 
 <!DOCTYPE html>
 <html>
@@ -27,10 +27,11 @@
 	<c:forEach var="style" items="${web.styles}">
 		<jsp:setProperty name="homeTemplate" property="style" value="${style}" />	
 	</c:forEach>
-	<jsp:getProperty name="homeTemplate" property="header" />
+	<c:out value="${homeTemplate.header}" escapeXml="false"/>
+	<%-- <jsp:getProperty name="homeTemplate" property="header" /> --%>
 </head>
 <body>
-	<header><jsp:getProperty name="homeTemplate" property="menu" /></header>
+	<header><c:out value="${homeTemplate.menu}" escapeXml="false"/></header>
 	<main>
 		<div class="container">
 			<c:out value="${content}" escapeXml="false" />

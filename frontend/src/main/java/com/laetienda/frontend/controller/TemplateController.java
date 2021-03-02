@@ -17,8 +17,9 @@ public class TemplateController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LogManager.getLogger(TemplateController.class);
        
-	String[] pathParts;
-	WebEngine web;
+	private String[] pathParts;
+	private WebEngine web;
+	
 	
     public TemplateController() {
         super();
