@@ -17,6 +17,6 @@
   		</div>
   		<button type="submit" class="btn btn-primary btn-block">Submit</button>
 	</form>
+	<c:out value="${loginError}" escapeXml="false"/>
 </div>
 </div>
-<c:out value="${loginError}" escapeXml="false"/>

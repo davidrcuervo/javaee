@@ -13,6 +13,7 @@ public class HttpTemplate {
 	private String uriMenu;
 	private String username;
 	private String password;
+	private String cookieDomain;
 	private HttpQuickClient httpClient;
 	
 	public String getUsername() {
@@ -57,6 +58,10 @@ public class HttpTemplate {
 		this.uriMenu = uriMenu;
 	}
 	
+	public void setPostParameter(String key, String Value) {
+		httpClient.setPostParameter(key, Value);
+	}
+	
 	public void setTitle(String title) {
 		httpClient.setPostParameter("title", title);
 	}
@@ -81,6 +86,16 @@ public class HttpTemplate {
 	public String getMenu() {
 		log.debug("getting menu from template frontend");
 		return httpClient.post(this.url + this.uriMenu);
+	}
+	
+	public void setCookieDomain(String cookieDomain) {
+		this.cookieDomain = "." + cookieDomain;
+	}
+	public void setSessionId(String sessionId) {
+		if(cookieDomain == null || cookieDomain.isBlank()) {
+			cookieDomain = ".localhost";
+		}
+		httpClient.setCookie("JSESSIONID", sessionId, cookieDomain);
 	}
 	
 	public String getQuickTemplate(String uri) {

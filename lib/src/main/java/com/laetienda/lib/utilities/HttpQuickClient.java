@@ -9,10 +9,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.ParseException;
@@ -28,9 +31,11 @@ public class HttpQuickClient {
 	private String url;
 	private Header authHeader;
 	private List<NameValuePair> postParameters;
+	private CookieStore cookieStore;
 	
 	public HttpQuickClient() {
 		postParameters = new ArrayList<>();
+		cookieStore = new BasicCookieStore();
 	}
 
 	public void setAuthHeader(String username, String password) {
@@ -57,13 +62,22 @@ public class HttpQuickClient {
 		}
 	}
 	
+	public void setCookie(String key, String value, String domain) {
+		BasicClientCookie cookie = new BasicClientCookie(key, value);
+		cookie.setDomain(domain);
+		cookie.setPath("/");
+		cookieStore.addCookie(cookie);
+	}
+	
 	public String post(String url) {
 		String result = new String();
 		
 		HttpPost httpPost = new HttpPost(url);
 		httpPost.setEntity(new UrlEncodedFormEntity(this.postParameters));
+
 		httpPost.addHeader(authHeader);
-		CloseableHttpClient httpClient = HttpClients.createDefault();
+		CloseableHttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+//		CloseableHttpClient httpClient = HttpClients.createDefault();
 		
 		try{
 			CloseableHttpResponse resp = httpClient.execute(httpPost);

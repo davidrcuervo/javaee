@@ -1,4 +1,4 @@
-package com.laetienda.wiki.tomcat;
+package com.laetienda.wiki.filter;
 
 import java.io.IOException;
 import javax.servlet.Filter;

@@ -24,8 +24,8 @@
           <a class="dropdown-item" href="${web.href('/settings/user')}">User Settings</a>
           <a class="dropdown-item" href="${web.apphref('/secure', 'wiki')}">Wiki Settings</a>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Something else here</a>
-          <c:if test="${not empty pageContext.request.userPrincipal}">
+          <a class="dropdown-item" href="#">uid: <c:out value="${param.uid}" /></a>
+          <c:if test="${not empty pageContext.request.userPrincipal || not empty param.uid}">
           	<a class="dropdown-item" href="${web.href('/logout')}">LogOut</a>
           </c:if>
         </div>

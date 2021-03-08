@@ -1,0 +1,50 @@
+version: 1
+
+dn: dc=example,dc=com
+objectClass: dcObject
+objectClass: organization
+objectClass: top
+dc: example
+o: example
+
+dn: cn=admin,dc=example,dc=com
+objectClass: organizationalRole
+objectClass: simpleSecurityObject
+cn: admin
+userPassword:: e1NTSEF9UFk0Yk9TL1h1WlNqRjZoaFVPM3JEelF2R2JoSkJmbEc=
+description: LDAP administrator
+
+dn: ou=people,dc=example,dc=com
+objectClass: organizationalUnit
+ou: people
+
+dn: uid=tomcat,ou=people,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: tomcat
+sn: Snless
+mail: tomcat@example.com
+uid: tomcat
+userPassword:: VDVVeVZZamRNUlByOWRxWQ==
+
+dn: uid=manager,ou=people,dc=example,dc=com
+objectClass: inetOrgPerson
+cn: manager
+sn: Snless
+mail: manager@example.com
+uid: manager
+userPassword:: OUxzVTc4TmtUTkVkNHNLaw==
+
+dn: ou=groups,dc=example,dc=com
+objectClass: organizationalUnit
+ou: groups
+
+dn: cn=users,ou=groups,dc=example,dc=com
+objectClass: groupOfNames
+objectClass: top
+cn: users
+member: uid=manager,ou=people,dc=example,dc=com
+member: uid=tomcat,ou=people,dc=example,dc=com
+
