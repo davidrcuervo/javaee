@@ -77,22 +77,22 @@ public class FormRepository {
 
 	public void setName(String name, JsonDb jdb) {
 		
-		List<Mistake> errors = check.name(name);
-		if(errors.size() > 0) {
-			log.warn("Form name has no set. name input is invalid");
-			
-		}else {
-			String query = "Form.findByName";
-			Map<String, String> params = new HashMap<String, String>();
-			params.put("name", name);
-			Form find = (Form)jdb.get("Form", query, params);
-			
-			if(find == null) {
-				form.setName(name);
-				log.debug("Form name has set correctly. $form.name: {}", form.getName());
-			}else {
-				errors.add(new Mistake("name", "Another form exists with same name"));
-			}
-		}
+//		List<Mistake> errors = check.name(name);
+//		if(errors.size() > 0) {
+//			log.warn("Form name has no set. name input is invalid");
+//			
+//		}else {
+//			String query = "Form.findByName";
+//			Map<String, String> params = new HashMap<String, String>();
+//			params.put("name", name);
+//			Form find = (Form)jdb.get("Form", query, params);
+//			
+//			if(find == null) {
+//				form.setName(name);
+//				log.debug("Form name has set correctly. $form.name: {}", form.getName());
+//			}else {
+//				errors.add(new Mistake("name", "Another form exists with same name"));
+//			}
+//		}
 	}
 }

@@ -36,7 +36,14 @@
   <servlet-mapping>
   	<servlet-name>Template</servlet-name>
   	<url-pattern>/template/*</url-pattern>
-  </servlet-mapping> <!--ForAll filter (WebEngine bean)-->
+  </servlet-mapping><!--settings servlet--><servlet>
+  	<servlet-name>settings</servlet-name>
+  	<jsp-file>/WEB-INF/jsp/settings/user.jsp</jsp-file>
+</servlet>
+	<servlet-mapping>
+		<servlet-name>settings</servlet-name>
+		<url-pattern>/settings/*</url-pattern>
+	</servlet-mapping><!--ForAll filter (WebEngine bean)-->
   <filter>
     <filter-name>FilterForAll</filter-name>
     <filter-class>com.laetienda.frontend.tomcat.FilterForAll</filter-class>

@@ -9,6 +9,7 @@
 <c:set target="${homeTemplate}" property="uriMenu" value="/menu" />
 <c:set target="${homeTemplate}" property="uriHeader" value="/header" />
 <c:set target="${homeTemplate}" property="active" value="wiki" />
+${requestScope.homeTemplate.setPostParameter("context", pageContext.request.contextPath)} 
 
 <c:if test="${hidePathLinksBar ne 'yes'}">
 	<jsp:useBean id="pathlinks" scope="request" class="com.laetienda.lib.bean.HttpTemplate" >

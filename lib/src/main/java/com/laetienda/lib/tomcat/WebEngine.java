@@ -39,15 +39,18 @@ public class WebEngine {
 
 	
 	private String hrefbuilder(String uri, String app) {
-		String result = req.getScheme() + "://" + req.getServerName();
 		
+		String scheme = req.getHeader("x-forwarded-proto") == null ? req.getScheme() : req.getHeader("x-forwarded-proto");
+		int port = req.getHeader("X-Forwarded-Port") == null ? req.getServerPort() : Integer.parseInt(req.getHeader("X-Forwarded-Port")); 
+		String result = scheme + "://" + req.getServerName();
+				
 		if(
-				req.getScheme().toLowerCase().equals("http") && req.getServerPort() == 80 ||
-				req.getScheme().toLowerCase().equals("https") && req.getServerPort() == 443
+				scheme.toLowerCase().equals("http") && port == 80 ||
+				scheme.toLowerCase().equals("https") && port == 443
 				) {
 			
 		}else {
-			result += ":" + req.getServerPort();
+			result += ":" + port;
 		}
 		
 		if(app == null) {
@@ -65,7 +68,7 @@ public class WebEngine {
 			result = req.getServletPath() + "/" + uri;
 		}
 		
-		return result;
+		return result; // + ";jsessionid=" + req.getSession(true).getId();
 	}
 	
 	public String href(String uri) {

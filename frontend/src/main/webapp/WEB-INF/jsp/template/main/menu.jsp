@@ -23,10 +23,17 @@
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="${web.href('/settings/user')}">User Settings</a>
           <a class="dropdown-item" href="${web.apphref('/secure', 'wiki')}">Wiki Settings</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">uid: <c:out value="${param.uid}" /></a>
+          
+          <%-- <a class="dropdown-item" href="#">uid: <c:out value="${param.uid}" /></a> --%>
           <c:if test="${not empty pageContext.request.userPrincipal || not empty param.uid}">
-          	<a class="dropdown-item" href="${web.href('/logout')}">LogOut</a>
+          	<div class="dropdown-divider"></div>
+          	<c:if test="${not empty param.context}">
+          		<c:set var="paramcontext"><%= request.getParameter("context").substring(1)%></c:set>
+          		<a class="dropdown-item" href="${web.apphref('/logout', paramcontext)}">LogOut</a>
+          	</c:if>
+          	<c:if test="${empty param.context}">
+          		<a class="dropdown-item" href="${web.href('/logout')}">LogOut</a>
+          	</c:if>
           </c:if>
         </div>
       </li>

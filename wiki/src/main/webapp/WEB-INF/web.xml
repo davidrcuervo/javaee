@@ -42,7 +42,14 @@
   <filter-mapping>
   	<filter-name>WikiOnFileIndex</filter-name>
   	<url-pattern></url-pattern>
-  </filter-mapping><!--securetest-->
+  </filter-mapping><!--LogOut--><servlet>
+  	<servlet-name>logout</servlet-name>
+  	<jsp-file>/WEB-INF/jsp/home/logout.jsp</jsp-file>
+</servlet>
+	<servlet-mapping>
+		<servlet-name>logout</servlet-name>
+		<url-pattern>/logout</url-pattern>
+	</servlet-mapping><!--securetest-->
 
   <servlet>
   	<servlet-name>securetest</servlet-name>

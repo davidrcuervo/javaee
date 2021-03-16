@@ -3,10 +3,6 @@
     pageEncoding="UTF-8"%>
 <%@ page isELIgnored="false" %>
 
-<c:set var="loginError" scope="request">
-	<div class="alert alert-danger" role="alert">
-	  	Wrong password or username!!!.
-	</div>
-</c:set>
+<c:set var="loginError" scope="request" value="true" />
 
 <jsp:include page="/WEB-INF/jsp/user/login.jsp"></jsp:include>

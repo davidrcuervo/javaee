@@ -5,6 +5,7 @@
 
 <c:set scope="request" var="content">
 	<h1>User information to be edited.</h1>
+	<div>JSessionIDd: <c:out value="${pageContext.request.session.id}" /></div>
 </c:set>
 
 <jsp:include page="/WEB-INF/jsp/template/frontendTemplate.jsp"></jsp:include>

@@ -9,6 +9,9 @@
 	<jsp:setProperty name="loginTemplate" property="url" value="${settings.get('frontend.url') }" />
 </jsp:useBean>
 
+<c:set var="action" value="${web.href('/j_security_check')}" />
+${requestScope.loginTemplate.setPostParameter("action", action)}
+
 <c:set var="hidePathLinksBar" scope="request" value="yes" />
 <c:set scope="request" var="content">
 	<c:out value="${loginTemplate.getQuickTemplate('/template/main/login')}" escapeXml="false" />
