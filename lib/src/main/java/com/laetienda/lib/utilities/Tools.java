@@ -10,6 +10,8 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.laetienda.lib.mistake.MistakeDeprecated;
+
 
 
 public class Tools{
@@ -37,10 +39,10 @@ public class Tools{
 		return errors;
 	}
 	
-	public String getJsonErrors(List<Mistake> errors) {
+	public String getJsonErrors(List<MistakeDeprecated> errors) {
 		String result = "{ \"errors\": [";
 		
-		for(Mistake error : errors) {
+		for(MistakeDeprecated error : errors) {
 			result += error.getJson() + ",";
 		}
 		

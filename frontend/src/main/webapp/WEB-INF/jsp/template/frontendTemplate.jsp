@@ -3,8 +3,9 @@
     pageEncoding="UTF-8"%>
 <%@ page isELIgnored="false" %>
 
-<c:import var="htmlHeader" url="/WEB-INF/jsp/template/main/header.jsp"></c:import>
-<c:import var="htmlMenu" url="/WEB-INF/jsp/template/main/menu.jsp"></c:import>
+<c:set var="template" value="${settings.get('frontend.template') }" />
+<c:import var="htmlHeader" url="/WEB-INF/jsp/template/${template}/header.jsp"></c:import>
+<c:import var="htmlMenu" url="/WEB-INF/jsp/template/${template}/menu.jsp"></c:import>
 
 <!DOCTYPE html>
 <html>

@@ -58,6 +58,8 @@ public class Settings {
 		
 		p.put("tomcat.username", "tomcat");
 		p.put("tomcat.password", "clave1234");
+		p.put("frontend.template.url", "http://localhost:8080/frontend/template/default");
+		p.put("wiki.template", "default");
 		return p;
 	}
 	

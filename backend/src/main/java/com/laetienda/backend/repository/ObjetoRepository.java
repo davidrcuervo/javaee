@@ -19,9 +19,9 @@ import org.laetienda.backend.engine.Db;
 
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 import com.laetienda.lib.model.AccessList;
 import com.laetienda.lib.model.Objeto;
-import com.laetienda.lib.utilities.Mistake;
 import com.laetienda.lib.utilities.Tools;
 
 public abstract class ObjetoRepository implements RepositoryInterface{	
@@ -33,7 +33,7 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 	private AccessListRepository writeRepository = null;
 	private AccessListRepository deleteRepository = null;
 	private HashMap<String, List<String>> errors = new HashMap<String, List<String>>();
-	private List<Mistake> errores = new ArrayList<Mistake>();
+	private List<MistakeDeprecated> errores = new ArrayList<MistakeDeprecated>();
 	private Tools tools;
 	
 	protected ObjetoRepository() {}
@@ -184,23 +184,23 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 	@Override
 	public void addError(String pointer, String detail) {
 		tools.addError(pointer, detail, errors);
-		Mistake error = new Mistake(pointer, detail);
+		MistakeDeprecated error = new MistakeDeprecated(pointer, detail);
 		addError(error);
 	}
 	
 	public void addError(int status, String pointer, String title, String detail) {
-		Mistake error = new Mistake(status, pointer, title, detail);
+		MistakeDeprecated error = new MistakeDeprecated(status, pointer, title, detail);
 		addError(error);
 	}
 	
 	public void addError(int status, String pointer, String detail) {
-		Mistake error = new Mistake(status, pointer, detail);
+		MistakeDeprecated error = new MistakeDeprecated(status, pointer, detail);
 		addError(error);
 	}
 	
-	private void addError(Mistake error) {
+	private void addError(MistakeDeprecated error) {
 		if(errors == null) {
-			errores = new ArrayList<Mistake>();
+			errores = new ArrayList<MistakeDeprecated>();
 		}
 		
 		errores.add(error);
@@ -210,7 +210,7 @@ public abstract class ObjetoRepository implements RepositoryInterface{
 		return tools.getJsonErrors(errores);
 	}
 	
-	public List<Mistake> getErrors(){
+	public List<MistakeDeprecated> getErrors(){
 		return errores;
 	}
 	

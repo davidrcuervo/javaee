@@ -20,8 +20,8 @@ import org.laetienda.backend.engine.Ldap;
 
 import com.google.gson.Gson;
 import com.laetienda.backend.myapptools.Ajustes;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 import com.laetienda.lib.utilities.Aes;
-import com.laetienda.lib.utilities.Mistake;
 
 public class AllRequestFilter implements Filter {
 	private final static Logger log = LogManager.getLogger(AllRequestFilter.class);
@@ -46,7 +46,7 @@ public class AllRequestFilter implements Filter {
     	
 		Ldap ldap = new Ldap();
 		Gson gson = new Gson();
-		List<Mistake >errors = new ArrayList<Mistake>();
+		List<MistakeDeprecated >errors = new ArrayList<MistakeDeprecated>();
 		LdapConnection connTomcat = null;
 		
 		try {
@@ -58,7 +58,7 @@ public class AllRequestFilter implements Filter {
 			log.error("Failed to connect to LDAP by using tomcat credentials. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			log.debug("Failed to connect to LDAP by using tomcat credentials.", e);
 			res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			errors.add(new Mistake(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Error", "Internal Error", "Internal error while connecting to LDAP"));
+			errors.add(new MistakeDeprecated(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Error", "Internal Error", "Internal error while connecting to LDAP"));
 			res.getWriter().print(gson.toJson(errors));
 		}finally {
 			ldap.closeLdapConnection(connTomcat);

@@ -22,10 +22,10 @@ import com.laetienda.backend.repository.RepositoryInterface;
 import com.laetienda.backend.service.AccessListService;
 import com.laetienda.backend.service.ComponentService;
 import com.laetienda.backend.service.SimpleService;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 import com.laetienda.lib.model.AccessList;
 import com.laetienda.lib.model.Component;
 import com.laetienda.lib.model.Objeto;
-import com.laetienda.lib.utilities.Mistake;
 
 public class SimpleController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -38,7 +38,7 @@ public class SimpleController extends HttpServlet {
 	private SimpleService service;
 	private Gson gson;
 	private String result;
-	private List<Mistake> errors;
+	private List<MistakeDeprecated> errors;
 	
     public SimpleController() {
         super();
@@ -53,7 +53,7 @@ public class SimpleController extends HttpServlet {
     private void doBefore(HttpServletRequest req, HttpServletResponse res) {
     	auth = (Authorization)req.getAttribute("auth");
     	pathParts = (String[])req.getAttribute("pathParts");
-    	errors = new ArrayList<Mistake>();
+    	errors = new ArrayList<MistakeDeprecated>();
     	service = getService(req);
     	res.setContentType("application/json");
     	res.setCharacterEncoding("UTF-8");
@@ -75,7 +75,7 @@ public class SimpleController extends HttpServlet {
 			 
 			 if(r == null) {
 				 //TODO next line would result on nullpointerobject exception
-				 errors.add(new Mistake(HttpServletResponse.SC_NOT_FOUND, "Bad Request", "Bad Request", "Url nof found"));
+				 errors.add(new MistakeDeprecated(HttpServletResponse.SC_NOT_FOUND, "Bad Request", "Bad Request", "Url nof found"));
 			 }else if(r.getErrors().size() > 0) {
 				 result = gson.toJson(r.getErrors());
 			 }else {
@@ -84,7 +84,7 @@ public class SimpleController extends HttpServlet {
 			 }		
 		}else {
 			log.warn("No valid url path: {}", req.getRequestURI());
-			errors.add(new Mistake(HttpServletResponse.SC_NOT_FOUND, "Path not found", "Path not found", "Invalid path: " + req.getRequestURI()));
+			errors.add(new MistakeDeprecated(HttpServletResponse.SC_NOT_FOUND, "Path not found", "Path not found", "Invalid path: " + req.getRequestURI()));
 		}
 		
 		doPrint(res);
@@ -99,7 +99,7 @@ public class SimpleController extends HttpServlet {
 			RepositoryInterface r = service.post(data);
 			
 			if(r == null) {
-				errors.add(new Mistake(HttpServletResponse.SC_BAD_REQUEST, "parameters", "Bad parameters request", "Check sent parameters and check they match the classname"));
+				errors.add(new MistakeDeprecated(HttpServletResponse.SC_BAD_REQUEST, "parameters", "Bad parameters request", "Check sent parameters and check they match the classname"));
 			}else if(r.getErrors().size() > 0) {
 				//TODO
 			}else {
@@ -108,7 +108,7 @@ public class SimpleController extends HttpServlet {
 			
 		}else {
 			log.warn("No valid url path: {}", req.getRequestURI());	
-			errors.add(new Mistake(404, "url", "Bad URL request", "No valid url path: " + req.getRequestURI()));
+			errors.add(new MistakeDeprecated(404, "url", "Bad URL request", "No valid url path: " + req.getRequestURI()));
 		}
 		
 		doPrint(res);
@@ -136,7 +136,7 @@ public class SimpleController extends HttpServlet {
     		break;
     		
     	default:
-    		errors.add(new Mistake(HttpServletResponse.SC_NOT_FOUND, "url", "Path not found", "path not found"));
+    		errors.add(new MistakeDeprecated(HttpServletResponse.SC_NOT_FOUND, "url", "Path not found", "path not found"));
     		break;
     	}
     	

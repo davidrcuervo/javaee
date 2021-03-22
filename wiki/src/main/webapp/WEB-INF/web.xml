@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
   <display-name>Archetype Created Web Application</display-name>
-  <distributable/>
   <context-param>
   	<param-name>isLog4jAutoInitializationDisabled</param-name>
   	<param-value>true</param-value>
@@ -16,49 +15,26 @@
   </filter-mapping>
   <listener>
   	<listener-class>com.laetienda.wiki.tomcat.Load</listener-class>
-  </listener><!--Home-->
-
-  <servlet>
-  	<servlet-name>home</servlet-name>
-  	<jsp-file>/WEB-INF/jsp/wiki/WikiOnFileIndex.jsp</jsp-file>
-  </servlet>
-
-    <servlet-mapping>
-  	<servlet-name>home</servlet-name>
-  	<url-pattern>/home</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-  	<servlet-name>home</servlet-name>
-  	<url-pattern></url-pattern>
-  </servlet-mapping>
+  </listener><!--HtmlController--><servlet>
+  	<servlet-name>HtmlController</servlet-name>
+  	<servlet-class>com.laetienda.wiki.controller.HtmlController</servlet-class>
+</servlet>
+	<servlet-mapping>
+		<servlet-name>HtmlController</servlet-name>
+		<url-pattern></url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>HtmlController</servlet-name>
+		<url-pattern>*.html</url-pattern>
+	</servlet-mapping><!--Home-->
   <filter>
   	<filter-name>WikiOnFileIndex</filter-name>
   	<filter-class>com.laetienda.wiki.filter.WikiOnFileFilterIndex</filter-class>
   </filter>
   <filter-mapping>
   	<filter-name>WikiOnFileIndex</filter-name>
-  	<url-pattern>/home</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-  	<filter-name>WikiOnFileIndex</filter-name>
-  	<url-pattern></url-pattern>
-  </filter-mapping><!--LogOut--><servlet>
-  	<servlet-name>logout</servlet-name>
-  	<jsp-file>/WEB-INF/jsp/home/logout.jsp</jsp-file>
-</servlet>
-	<servlet-mapping>
-		<servlet-name>logout</servlet-name>
-		<url-pattern>/logout</url-pattern>
-	</servlet-mapping><!--securetest-->
-
-  <servlet>
-  	<servlet-name>securetest</servlet-name>
-  	<jsp-file>/WEB-INF/jsp/home/secure.jsp</jsp-file>
-  </servlet>  
-  <servlet-mapping>
-  	<servlet-name>securetest</servlet-name>
-  	<url-pattern>/secure</url-pattern>
-  </servlet-mapping><!-- **SECURITY CONFIGURATION** -->
+  	<url-pattern>/home.html</url-pattern>
+  </filter-mapping><!-- **SECURITY CONFIGURATION** -->
 
   <security-constraint>
   	<web-resource-collection>
@@ -90,8 +66,8 @@
   
   	<auth-method>FORM</auth-method>
   	<form-login-config>
-  		<form-login-page>/WEB-INF/jsp/home/login.jsp</form-login-page>
-  		<form-error-page>/WEB-INF/jsp/home/errorlogin.jsp</form-error-page>
+  		<form-login-page>/WEB-INF/html/login.jsp</form-login-page>
+  		<form-error-page>/WEB-INF/jsp/errorlogin.jsp</form-error-page>
   	</form-login-config>
   	
   </login-config>
@@ -111,6 +87,7 @@
 		<servlet-name>wikiOnFile</servlet-name>
 		<url-pattern>/public/*</url-pattern>
 		<url-pattern>/myself/*</url-pattern>
+		<url-pattern>/tournaments/*</url-pattern>
 	</servlet-mapping>
 	<filter>
 		<filter-name>wikiOnFile</filter-name>
@@ -120,6 +97,7 @@
 		<filter-name>wikiOnFile</filter-name>
 		<url-pattern>/public/*</url-pattern>
 		<url-pattern>/myself/*</url-pattern>
+		<url-pattern>/tournaments/*</url-pattern>
 	</filter-mapping><!--Path parts filter-->
 	<filter>
 		<filter-name>pathParts</filter-name>
@@ -136,5 +114,9 @@
 		<param-name>public</param-name>
 		<param-value>C:\Users\david\ownCloud\MyFiles\orgexports\public</param-value>
 </context-param>
+	<context-param>
+		<param-name>tournaments</param-name>
+		<param-value>C:\Users\david\ownCloud\MyFiles\orgexports\private\cafeteros\Tournaments</param-value>
+	</context-param>
 
 </web-app>

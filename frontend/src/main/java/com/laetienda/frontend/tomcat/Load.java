@@ -15,7 +15,7 @@ public class Load implements ServletContextListener {
 	private Settings settings;
 	
     public Load() {
-        settings = new Settings();
+        
     }
 
     public void contextDestroyed(ServletContextEvent arg0)  { 
@@ -24,6 +24,8 @@ public class Load implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent arg0)  { 
          
+    	settings = new Settings();
+    	System.out.println("$frontend.template: " + settings.get("frontend.template"));
     	ServletContext sc = arg0.getServletContext();
     	sc.setAttribute("settings", settings);
     	log.info("Servlet Context, Load, has initialized succesfully");

@@ -21,7 +21,7 @@
 		
 	</Appenders>
 	<Loggers>
-		<Logger name="com.laetienda.frontend" level="warning" additivity="false">
+		<Logger name="com.laetienda.frontend" level="info" additivity="false">
 			<!-- <AppenderRef ref="errorFile"></AppenderRef> -->
 	      	<AppenderRef ref="Console"></AppenderRef>
 		</Logger>

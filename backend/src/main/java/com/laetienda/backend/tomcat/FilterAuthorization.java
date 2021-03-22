@@ -23,7 +23,7 @@ import org.laetienda.backend.engine.Ldap;
 
 import com.google.gson.Gson;
 import com.laetienda.backend.myauth.AuthTables;
-import com.laetienda.lib.utilities.Mistake;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 
 
 public class FilterAuthorization implements Filter {
@@ -53,7 +53,7 @@ public class FilterAuthorization implements Filter {
     	res.setContentType("application/json");
     	res.setCharacterEncoding("UTF-8");
 		
-    	List<Mistake> errors = new ArrayList<Mistake>();
+    	List<MistakeDeprecated> errors = new ArrayList<MistakeDeprecated>();
     	
     	for(Enumeration<String> e = req.getHeaderNames(); e.hasMoreElements();) {
     		log.debug("$Header: {}", e.nextElement() );
@@ -62,7 +62,7 @@ public class FilterAuthorization implements Filter {
     	if(req.getHeader("Authorization") == null) {
     		res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     		log.warn("No authorization credentials have been provided");
-    		errors.add(new Mistake(HttpServletResponse.SC_UNAUTHORIZED, "Authorizatoin", "Authorization header","Failed to authenticate, authorization header is missing"));
+    		errors.add(new MistakeDeprecated(HttpServletResponse.SC_UNAUTHORIZED, "Authorizatoin", "Authorization header","Failed to authenticate, authorization header is missing"));
     		res.getWriter().print(new Gson().toJson(errors));
     	}else {
     		String authHeader = req.getHeader("Authorization");
@@ -78,7 +78,7 @@ public class FilterAuthorization implements Filter {
     		if(auth.getUser() == null) {
     			res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     			log.warn("Failed to authenticate user", username);
-    			errors.add(new Mistake(401, "username", "Authentication failed","Failed to authenticate user: " + username));
+    			errors.add(new MistakeDeprecated(401, "username", "Authentication failed","Failed to authenticate user: " + username));
     			res.getWriter().print(new Gson().toJson(errors));
     		}else {
     			req.setAttribute("auth", auth);

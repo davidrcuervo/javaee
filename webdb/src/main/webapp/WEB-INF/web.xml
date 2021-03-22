@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"><!--Load application context-->
+	<listener>
+		<listener-class>com.laetienda.webdb.listener.Load</listener-class>
+	</listener><!--Group Service--><filter>
+		<filter-name>GroupFilter</filter-name>
+		<filter-class>com.laetienda.webdb.filter.GroupFilter</filter-class>
+</filter>
+	<filter-mapping>
+		<filter-name>GroupFilter</filter-name>
+		<url-pattern>/group/*</url-pattern>
+	</filter-mapping>
+	<servlet>
+		<servlet-name>GroupServlet</servlet-name>
+		<servlet-class>com.laetienda.webdb.controller.GroupController</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GroupServlet</servlet-name>
+		<url-pattern>/group/*</url-pattern>
+	</servlet-mapping><!--Servlet to jump directly to jsp file-->
+	<servlet>
+		<description>It will jump files directly to jsp so it is not required to crate a jsp-servlet for each jsp file</description>
+		<servlet-name>Html</servlet-name>
+		<servlet-class>com.laetienda.webdb.controller.Html</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Html</servlet-name>
+		<url-pattern>*.html</url-pattern>
+	</servlet-mapping>
+</web-app>

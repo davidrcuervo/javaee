@@ -15,9 +15,9 @@ import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.repository.AccessListRepository;
 import com.laetienda.backend.repository.ComponentRepository;
 import com.laetienda.backend.repository.RepositoryInterface;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 import com.laetienda.lib.model.Component;
 import com.laetienda.lib.model.Objeto;
-import com.laetienda.lib.utilities.Mistake;
 
 public class ComponentService implements SimpleService {
 	private final static Logger log = LogManager.getLogger(ComponentService.class);
@@ -109,7 +109,7 @@ public class ComponentService implements SimpleService {
 				if(result.getErrors().size() > 0) {
 					log.debug("Componet has erros and can't be persisted. $erros: {}", result.getErrors().size());
 					if(log.isDebugEnabled()) {
-						for(Mistake error : result.getErrors()) {
+						for(MistakeDeprecated error : result.getErrors()) {
 							log.debug(
 									"$error -> $status: {}, $pointer: {}, $title: {}, detail: {}", 
 									error.getStatus(),

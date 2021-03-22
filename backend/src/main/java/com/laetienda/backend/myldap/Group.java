@@ -27,8 +27,8 @@ import org.laetienda.backend.engine.Ldap;
 
 import com.laetienda.backend.myapptools.FormBeanInterface;
 import com.laetienda.backend.myapptools.Ajustes;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 import com.laetienda.lib.utilities.Aes;
-import com.laetienda.lib.utilities.Mistake;
 import com.laetienda.lib.utilities.Tools;
 
 public class Group implements Serializable, FormBeanInterface, LdapEntity {
@@ -40,7 +40,7 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 	private Ldap ldap;
 	private List<Modification> modifications = new ArrayList<Modification>();
 	private HashMap<String, List<String>> errors = new HashMap<String, List<String>>();
-	private List<Mistake> errores = new ArrayList<Mistake>();
+	private List<MistakeDeprecated> errores = new ArrayList<MistakeDeprecated>();
 	
 	public Group() {
 		tools = new Tools();
@@ -308,9 +308,9 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 		 return this.getLdapEntry().getDn().getRdn(0).getValue();
 	 }
 	 
-	 private void addError(Mistake error) {
+	 private void addError(MistakeDeprecated error) {
 			if(errors == null) {
-				errores = new ArrayList<Mistake>();
+				errores = new ArrayList<MistakeDeprecated>();
 			}
 			
 			errores.add(error);
@@ -319,26 +319,26 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 	@Override
 	public void addError(String pointer, String detail) {
 		errors = tools.addError(pointer, detail, this.errors);
-		Mistake error = new Mistake(pointer, detail);
+		MistakeDeprecated error = new MistakeDeprecated(pointer, detail);
 		addError(error);
 	}
 	 
 	@Override
 	public void addError(int status, String pointer, String title, String detail) {
-		Mistake error = new Mistake(status, pointer, title, detail);
+		MistakeDeprecated error = new MistakeDeprecated(status, pointer, title, detail);
 		addError(error);
 		
 	}
 	
 	@Override
 	public void addError(int status, String pointer, String detail) {
-		Mistake error = new Mistake(status, pointer, detail);
+		MistakeDeprecated error = new MistakeDeprecated(status, pointer, detail);
 		addError(error);
 		
 	}
 	
 	@Override
-	public List<Mistake> getErrors() { 
+	public List<MistakeDeprecated> getErrors() { 
 		return errores;
 	}
 	 

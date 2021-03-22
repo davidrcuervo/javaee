@@ -23,9 +23,10 @@
 	</Appenders>
 	<Loggers>
 		<Logger name="com.laetienda.wiki" level="debug" additivity="false">
-		<!-- <AppenderRef ref="errorFile"></AppenderRef> -->
-      	<AppenderRef ref="Console"></AppenderRef>
-	</Logger>
+			<!-- <AppenderRef ref="errorFile"></AppenderRef> -->
+      		<AppenderRef ref="Console"></AppenderRef>
+		</Logger>
+	
     <!--
     <Logger name="com.laetienda" level="debug" additivity="false">
       <AppenderRef ref="Console"></AppenderRef>

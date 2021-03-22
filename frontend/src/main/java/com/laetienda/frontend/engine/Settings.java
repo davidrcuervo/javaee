@@ -33,6 +33,7 @@ public class Settings {
 		p.put("backend.username", "tomcat");
 		p.put("backend.password", "passwd");
 		p.put("backend.db.path", "/dbApi");
+		p.put("frontend.template", "default");
 		return p;
 	}
 	

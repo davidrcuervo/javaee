@@ -9,22 +9,20 @@
     <welcome-file>default.html</welcome-file>
     <welcome-file>default.htm</welcome-file>
     <welcome-file>default.jsp</welcome-file>
-  </welcome-file-list><!--Home Servlet-->
+  </welcome-file-list><!--Load Context--><listener>
+  	<listener-class>com.laetienda.frontend.tomcat.Load</listener-class>
+</listener><!--Html Controller-->
   <servlet>
-    <servlet-name>home</servlet-name>
-    <jsp-file>/WEB-INF/jsp/home/frontendHome.jsp</jsp-file>
+  	<servlet-name>HtmlController</servlet-name>
+  	<servlet-class>com.laetienda.frontend.controller.HtmlController</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>home</servlet-name>
-    <url-pattern>/home</url-pattern>
-  </servlet-mapping><!--logout servlet-->
-  <servlet>
-  	<servlet-name>logout</servlet-name>
-  	<jsp-file>/WEB-INF/jsp/user/logout.jsp</jsp-file>
-  </servlet>
+  	<servlet-name>HtmlController</servlet-name>
+  	<url-pattern></url-pattern>
+  </servlet-mapping>
   <servlet-mapping>
-  	<servlet-name>logout</servlet-name>
-  	<url-pattern>/logout</url-pattern>
+  	<servlet-name>HtmlController</servlet-name>
+  	<url-pattern>*.html</url-pattern>
   </servlet-mapping><!--Template Servlet-->  
   <servlet>
   	<description>
@@ -78,8 +76,8 @@
   <login-config>
   	<auth-method>FORM</auth-method>
   	<form-login-config>
-  		<form-login-page>/WEB-INF/jsp/user/login.jsp</form-login-page>
-  		<form-error-page>/WEB-INF/jsp/user/loginError.jsp</form-error-page>
+  		<form-login-page>/WEB-INF/html/login.jsp</form-login-page>
+  		<form-error-page>/WEB-INF/jsp/loginError.jsp</form-error-page>
   	</form-login-config>
 	
 	</login-config>

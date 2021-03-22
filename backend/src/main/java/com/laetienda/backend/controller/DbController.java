@@ -21,8 +21,8 @@ import org.laetienda.backend.engine.Authorization;
 
 import com.google.gson.Gson;
 import com.laetienda.backend.service.DbService;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 import com.laetienda.lib.model.Objeto;
-import com.laetienda.lib.utilities.Mistake;
 
 public class DbController extends HttpServlet {
 	private static Logger log = LogManager.getLogger(DbController.class);
@@ -31,7 +31,7 @@ public class DbController extends HttpServlet {
 	private String result;
 	private String[] pathParts;
 	private Gson gson;
-	private List<Mistake> errors;
+	private List<MistakeDeprecated> errors;
 	private DbService service;
 	private EntityManagerFactory emf;
 //	private AuthTables tables;
@@ -49,7 +49,7 @@ public class DbController extends HttpServlet {
     
     private void doInit(HttpServletRequest req, HttpServletResponse res) {
     	gson = new Gson();
-    	errors = new ArrayList<Mistake>();
+    	errors = new ArrayList<MistakeDeprecated>();
     	result = "Failed to process request.";
     	auth = (Authorization)req.getAttribute("auth");
     	connTomcat = (LdapConnection)req.getAttribute("connTomcat");
@@ -81,7 +81,7 @@ public class DbController extends HttpServlet {
 			
 			Object obj = service.find(className, queryName, parameters);
 			if(obj == null) {
-				errors.add(new Mistake(400, "parameters", "Object not found", "Check parameters or authorization to read this object."));
+				errors.add(new MistakeDeprecated(400, "parameters", "Object not found", "Check parameters or authorization to read this object."));
 			}else {
 				res.setStatus(HttpServletResponse.SC_OK);
 				result = gson.toJson(obj);
@@ -91,7 +91,7 @@ public class DbController extends HttpServlet {
 			res.setStatus(400);
 			log.warn("Failed to parse url parameters. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
 			log.debug("Failed to parse url parameters.", e);
-			errors.add(new Mistake(400, "parameters", "Bad query parameters", "check numer of parameters, this a url example: //https://<host & port>/<ctx name>/<url pattern>/{className}/{queyName}/parName1/parVal1/parName2/parVal2...."));
+			errors.add(new MistakeDeprecated(400, "parameters", "Bad query parameters", "check numer of parameters, this a url example: //https://<host & port>/<ctx name>/<url pattern>/{className}/{queyName}/parName1/parVal1/parName2/parVal2...."));
 		}catch(Exception e) {
 			doCatch(e, res);
 		}
@@ -119,7 +119,7 @@ public class DbController extends HttpServlet {
 				obj = service.post(className, postData);
 				
 				if(obj == null) {
-					errors.add(new Mistake(HttpServletResponse.SC_BAD_REQUEST, "parameters", "Bad parameters request", "Check sent parameters and check they match the classname"));
+					errors.add(new MistakeDeprecated(HttpServletResponse.SC_BAD_REQUEST, "parameters", "Bad parameters request", "Check sent parameters and check they match the classname"));
 				}else {
 					res.setStatus(HttpServletResponse.SC_OK);
 					result = gson.toJson(obj);
@@ -127,7 +127,7 @@ public class DbController extends HttpServlet {
 				
 			}else {
 				log.warn("No valid url path: {}", req.getRequestURI());	
-				errors.add(new Mistake(404, "url", "Bad URL request", "No valid url path: " + req.getRequestURI()));
+				errors.add(new MistakeDeprecated(404, "url", "Bad URL request", "No valid url path: " + req.getRequestURI()));
 			}
 			
 			
@@ -157,11 +157,11 @@ public class DbController extends HttpServlet {
 				service.put(className, postData);
 				
 			}else {
-				errors.add(new Mistake(HttpServletResponse.SC_NOT_FOUND, "URL", "URL not found", "Check url. I requieres class name and object id"));
+				errors.add(new MistakeDeprecated(HttpServletResponse.SC_NOT_FOUND, "URL", "URL not found", "Check url. I requieres class name and object id"));
 			}
 			
 		}catch(NumberFormatException e) {
-			errors.add(new Mistake(HttpServletResponse.SC_NOT_FOUND, "ID", "Invalid ID", "The id should be a valid integer"));
+			errors.add(new MistakeDeprecated(HttpServletResponse.SC_NOT_FOUND, "ID", "Invalid ID", "The id should be a valid integer"));
 		}catch(Exception e) {
 			doCatch(e, res);
 		}finally {
@@ -184,7 +184,7 @@ public class DbController extends HttpServlet {
 		String message = String.format("Servlet failed while processing request. $Exception: %s -> %s", e.getClass().getName(), e.getMessage());
 		log.error(message);
 		log.debug("Servlet failed while processing request." ,e);
-		errors.add(new Mistake(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", "Internal error", message));
+		errors.add(new MistakeDeprecated(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", "Internal error", message));
 		result = gson.toJson(errors);
 	}
 }

@@ -8,10 +8,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.laetienda.lib.engine.JsonDb;
+import com.laetienda.lib.mistake.MistakeDeprecated;
 import com.laetienda.lib.model.Form;
 import com.laetienda.lib.model.Input;
 import com.laetienda.lib.utilities.InputVerification;
-import com.laetienda.lib.utilities.Mistake;
 
 public class FormRepository {
 	private final static Logger log = LogManager.getLogger(FormRepository.class);
