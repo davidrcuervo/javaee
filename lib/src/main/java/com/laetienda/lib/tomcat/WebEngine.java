@@ -16,6 +16,7 @@ public class WebEngine {
 	private HttpServletRequest req;
 	private String title;
 	private String active = null;
+	private String icon;
 	
 	public WebEngine() {
 		
@@ -122,6 +123,12 @@ public class WebEngine {
 	public void setActive(String active) {
 		this.active = active;
 	}
-	
-	
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
 }

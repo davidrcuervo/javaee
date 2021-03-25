@@ -10,9 +10,11 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarText">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item ${web.active == 'store' ? 'active' : '' }">
-        <a class="nav-link" href="${web.href('/app/store')}"> Store</a>
-      </li>
+    	<%--
+	      <li class="nav-item ${web.active == 'store' ? 'active' : '' }">
+	        <a class="nav-link" href="${web.href('/app/store')}"> Store</a>
+	      </li>
+       --%>
       <li class="nav-item ${web.active == 'wiki' ? 'active' : '' }">
         <a class="nav-link" href="${web.apphref('/home.html', 'wiki')}">Wiki</a>
       </li>

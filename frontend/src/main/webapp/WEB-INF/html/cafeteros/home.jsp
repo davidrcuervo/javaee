@@ -10,7 +10,7 @@
 		<div class="row">
 			<div class="col">
 				<a href="${web.apphref('/tournaments', 'wiki') }">
-					<div><i class="fas fa-book fa-5x"></i></div>
+					<div><i class="fas fa-trophy fa-5x"></i></div>
 					<div class="text-align-center">Tournaments</div>
 				</a>
 			</div>

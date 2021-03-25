@@ -30,7 +30,7 @@
 		<c:set target="${web}" property="style">
 			<!-- <link href="http://thomasf.github.io/solarized-css/solarized-light.min.css" rel="stylesheet"></link> -->
 		</c:set>
-		<c:out value="${wiki.body}" escapeXml="false"/>
+		<div id="emacs"><c:out value="${wiki.body}" escapeXml="false"/></div>
 	</c:if>
 	
 <%--

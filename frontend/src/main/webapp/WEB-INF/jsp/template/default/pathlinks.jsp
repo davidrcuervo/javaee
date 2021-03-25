@@ -10,14 +10,18 @@
 <c:set var="pathLink" value="" />
 
 <div>
-	/ <a href="${web.href('/home')}">Home</a>
-	/ <a href="${web.apphref('/home', appname)}"><c:out value="${appname}" /></a>
-	/ <a href="${web.apphref(param.servlet, appname)}"><c:out value="${srvtname}" /></a>
-	<c:forEach var="ppart" items="${pparts}">
-		<c:set var="pathLink">${pathLink}/${ppart}</c:set>
-		<c:set var="completeLink">${param.servlet}${pathLink}</c:set>
-		/ <a href="${web.apphref(completeLink, appname)}"><c:out value="${ppart}" /></a>
-	</c:forEach>
+	/ <a href="${web.href('/home.html')}">Home</a>
+	/ <a href="${web.apphref('/home.html', appname)}"><c:out value="${appname}" /></a>
+	
+	<c:if test="${not param.servlet.startsWith('/WEB-INF/')}">
+	
+		/ <a href="${web.apphref(param.servlet, appname)}"><c:out value="${srvtname}" /></a>
+		<c:forEach var="ppart" items="${pparts}">
+			<c:set var="pathLink">${pathLink}/${ppart}</c:set>
+			<c:set var="completeLink">${param.servlet}${pathLink}</c:set>
+			/ <a href="${web.apphref(completeLink, appname)}"><c:out value="${ppart}" /></a>
+		</c:forEach>
+	</c:if>
 </div>
 <%--
 <div>	

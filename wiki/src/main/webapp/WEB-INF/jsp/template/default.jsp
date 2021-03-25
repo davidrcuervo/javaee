@@ -14,7 +14,7 @@ ${homeTemplate.setPostParameter("context", pageContext.request.contextPath)}
 
 <c:if test="${hidePathLinksBar ne 'yes'}">
 	<jsp:useBean id="pathlinks" scope="request" class="com.laetienda.lib.http.HttpTemplate" >
-		<jsp:setProperty name="pathlinks" property="url" value="${settings.get('frontend.url') }" />
+		<jsp:setProperty name="pathlinks" property="url" value="${settings.get('frontend.template.url') }" />
 	</jsp:useBean>
  	${requestScope.pathlinks.setPostParameter("context", pageContext.request.contextPath)} 
  	${requestScope.pathlinks.setPostParameter("servlet", pageContext.request.servletPath)}

@@ -1,4 +1,10 @@
 @charset "UTF-8";
+
+h1 {
+	margin: 1em 0;
+}
+
+/*
 html{
 	background-color: #ececec;
 	margin: 0;
@@ -61,3 +67,4 @@ nav#topNav li:hover{
 nav#topNav .active{
 	background-color: #4CAF50;
 }
+*/

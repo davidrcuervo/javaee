@@ -1,1 +1,38 @@
 @charset "UTF-8";
+
+div#emacs h1{
+	margin: 1em 0 1em 0;
+}
+
+div#emacs h2{
+	margin: 2em 0 0.5em 0;
+	color: #117a8b;
+}
+
+div#emacs h3{
+	margin: 1em 0 0 0;
+}
+
+div#emacs pre{
+    background: #333;
+    white-space: pre;
+    word-wrap: break-word;
+    overflow: auto;
+    margin: 20px 25px;
+    border-radius: 4px;
+    border: 1px solid #292929;
+    position: relative;
+    color: #fff;
+}
+
+/*
+div#emacs th, div#emacs td {
+  text-align: left;
+  padding: 8px;
+}
+*/
+div#postamble p{
+	margin: 0;
+    text-align: center;
+    font-size: small;
+}

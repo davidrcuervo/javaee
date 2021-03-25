@@ -36,6 +36,9 @@ public class HtmlController extends HttpServlet {
 		WebEngine web = (WebEngine)request.getAttribute("web");
 		log.debug("$htmlPath: {}", path);
 		log.debug("$wiki.template: {}", template);
+		log.debug("$pathInfo: {}", request.getPathInfo());
+		log.debug("$uri: {}", request.getRequestURI());
+		
 		
 		if(path.equals("/")) {
 			response.sendRedirect(web.href("/home.html"));
