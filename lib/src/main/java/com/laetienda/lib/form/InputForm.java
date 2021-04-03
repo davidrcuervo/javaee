@@ -12,8 +12,9 @@ public @interface InputForm {
 	
 	String name();
 	String label();
-	String id() default ""; 		//If default use the name of the variable
+	String id(); 		//If default use the name of the variable
 	InputType type() default InputType.TEXT;
 	int order() default 0;
 	String placeholder();
+	String options() default "";
 }

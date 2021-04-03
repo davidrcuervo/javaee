@@ -1,6 +1,11 @@
 package com.laetienda.lib.form;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class InputRepoImpl implements InputRepository {
+	final static private Logger log = LogManager.getLogger(InputRepoImpl.class);
+	
 
 	private String name;
 	private String label;
@@ -8,6 +13,7 @@ public class InputRepoImpl implements InputRepository {
 	private InputType type;
 	private int order;
 	private String placeholder;
+	private String options;
 	
 	public InputRepoImpl(InputForm input) {
 		name = input.name();
@@ -16,6 +22,12 @@ public class InputRepoImpl implements InputRepository {
 		type = input.type();
 		order = input.order();
 		placeholder = input.placeholder();
+		options = input.options();
+	}
+	
+	@Override
+	public String getOptions() {
+		return options;
 	}
 
 	@Override
@@ -47,4 +59,6 @@ public class InputRepoImpl implements InputRepository {
 	public String getPlaceholder() {
 		return placeholder;
 	}
+
+
 }

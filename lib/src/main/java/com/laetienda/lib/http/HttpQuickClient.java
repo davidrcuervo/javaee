@@ -49,7 +49,7 @@ public class HttpQuickClient implements ClientRepository {
 	
 	@Override
 	public void setPostParameter(String key, String value) {
-		log.debug("$key: {} -> $value: {}");
+		log.debug("$key: {} -> $value: {}", key, value);
 		if(postParameters == null) {
 			postParameters = new ArrayList<>();
 		}

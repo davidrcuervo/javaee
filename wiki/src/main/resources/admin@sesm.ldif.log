@@ -1,0 +1,12 @@
+version: 1
+
+#!RESULT OK
+#!CONNECTION ldap://192.168.0.2:636
+#!DATE 2021-03-25T01:31:01.598
+dn: cn=admin@sesm,ou=groups,dc=la-etienda,dc=com
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: admin@sesm
+uniqueMember: uid=admin.sesm,ou=people,dc=la-etienda,dc=com
+uniqueMember: uid=myself,ou=people,dc=la-etienda,dc=com
+

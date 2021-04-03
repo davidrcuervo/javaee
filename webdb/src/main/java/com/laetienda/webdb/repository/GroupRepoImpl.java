@@ -1,11 +1,15 @@
 package com.laetienda.webdb.repository;
 
+import com.laetienda.lib.form.SelectOption;
 import com.laetienda.lib.mistake.Mistake;
+import com.laetienda.lib.temp.User;
 import com.laetienda.model.lib.Validate;
 import com.laetienda.model.webdb.Group;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -227,5 +231,41 @@ public class GroupRepoImpl implements GroupRepository {
 		}else {
 			group.getMembers().add(username);
 		}
+	}
+
+	@Override
+	public Map<String, List<SelectOption>> getOptions(Group group){
+		
+		Map<String, List<SelectOption>> result = new HashMap<String, List<SelectOption>>();
+		result.put("groupOwnersOptions", getGroupOwnerOptions(group));
+		result.put("groupMemberOptions", getGroupMemberOptions(group));
+		return result;
+ 	}
+	
+	private List<SelectOption> getGroupMemberOptions(Group group) {
+		User user = new User();
+		List<SelectOption> result = user.getSelectOptions();
+		
+		for(SelectOption opt : result) {
+			if(group.getMembers().contains(opt.getValue())) {
+				opt.setSelected(true);
+			}
+		}
+		
+		return result;
+	}
+
+	private List<SelectOption> getGroupOwnerOptions(Group group) {
+		User user = new User();
+		List<SelectOption> result = user.getSelectOptions();
+		
+		for(SelectOption opt : result) {
+			
+			if(group.getOwners().contains(opt.getValue())) {
+				opt.setSelected(true);
+			}
+		}
+	
+		return result;
 	}
 }

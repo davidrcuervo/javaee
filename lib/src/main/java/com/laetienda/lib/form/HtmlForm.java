@@ -11,6 +11,6 @@ public @interface HtmlForm {
 	
 	String name();
 	FormMethod method() default FormMethod.POST;
-	String action() default "";
+	FormAction action() default FormAction.CREATE;
 	String button() default "";
 }

@@ -115,13 +115,14 @@ public class HttpTemplate implements TemplateRepository {
 			
 	public static void main(String[] args) {
 		HttpTemplate template = new HttpTemplate();
-		template.setUrl("http://localhost:8080/frontend0/template/main");
-		template.setUriHeader("/header");
-		template.setUriMenu("/menu");
-		template.setActive("wiki");
-		template.setTitle("titulo");
-		System.out.println(template.getHeader());
-		System.out.println(template.getMenu());
+		template.setUrl("http://localhost:8080");
+		template.setPostParameter("clazzName", "com.laetienda.model.webdb.Group");
+		
+//		template.setUriHeader("/header");
+//		template.setUriMenu("/menu");
+//		template.setActive("wiki");
+//		template.setTitle("titulo");
+		System.out.println(template.getHtmlTemplate("/form/form.html"));
 		
 	}
 }

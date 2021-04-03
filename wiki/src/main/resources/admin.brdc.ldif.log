@@ -1,0 +1,15 @@
+version: 1
+
+#!RESULT OK
+#!CONNECTION ldap://192.168.0.2:636
+#!DATE 2021-03-25T01:30:19.856
+dn: uid=admin.brdc,ou=people,dc=la-etienda,dc=com
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: Admin Brdc
+sn: Brdc
+uid: admin.brdc
+userPassword:: V0pyMDlpajN4MFBQVFI5Y0F5dTU=
+

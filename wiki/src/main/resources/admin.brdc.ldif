@@ -1,0 +1,12 @@
+version: 1
+
+dn: uid=admin.brdc,ou=people,dc=la-etienda,dc=com
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: Admin Brdc
+sn: Brdc
+uid: admin.brdc
+userPassword:: V0pyMDlpajN4MFBQVFI5Y0F5dTU=
+

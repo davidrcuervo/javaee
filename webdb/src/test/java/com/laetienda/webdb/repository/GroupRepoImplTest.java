@@ -90,6 +90,8 @@ class GroupRepoImplTest {
 		assertNull(groupRepo.findByName("test"));
 		
 		Group group = new Group();
+//		group.setName("");
+		group.setDescription("");
 		errors = groupRepo.insert(group);
 		assertEquals(3, errors.size());
 		

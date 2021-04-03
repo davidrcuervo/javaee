@@ -1,0 +1,9 @@
+version: 1
+
+dn: cn=admin@brdc,ou=groups,dc=la-etienda,dc=com
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: admin@brdc
+uniqueMember: uid=admin.brdc,ou=people,dc=la-etienda,dc=com
+uniqueMember: uid=myself,ou=people,dc=la-etienda,dc=com
+

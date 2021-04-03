@@ -52,7 +52,7 @@ public class FilterPath implements Filter{
 		/*
 		 * DISABLE BLOCK BELOW, ONLY ENABLE IT TO TROUBLESHOOT PATH PARTS MODULE
 		 */
-		
+		/*
 		log.debug("request.getRequestURL().toString(): {}" ,httpReq.getRequestURL().toString());
 		log.debug("request.getRequestURI(): {}", httpReq.getRequestURI());
 		log.debug("request.getScheme(): {}", httpReq.getScheme());
@@ -69,17 +69,18 @@ public class FilterPath implements Filter{
 		
 		log.debug("pathParts.length: " + pathParts.length);
 		log.debug("pathParts[0].length: " + pathParts[0].length());
-		
+		*/
 		for(int c=0; c < pathParts.length; c++){
 			log.debug("pathParts[" + c + "]: " + pathParts[c]);
 		}
-		
+		/*
 		log.debug("allpathParts.length: " + allpathParts.length);
 		log.debug("allpathParts[0].length: " + allpathParts[0].length());
 		
 		for(int c=0; c < allpathParts.length; c++){
 			log.debug("allpathParts[" + c + "]: " + allpathParts[c]);
 		}
+			*/
 		
 		
 		chain.doFilter(request, response);

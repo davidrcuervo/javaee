@@ -8,4 +8,5 @@ public interface InputRepository {
 	public InputType getType();
 	public int getOrder();
 	public String getPlaceholder();
+	public String getOptions();
 }

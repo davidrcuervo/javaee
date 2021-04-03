@@ -11,7 +11,7 @@ import javax.persistence.*;
 	@NamedQuery(name="WebDB.findall", query="SELECT w FROM WebDb w")
 })
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class DbRow implements Serializable{	
+public abstract class DbRow implements Serializable, WebDb{	
 	private static final long serialVersionUID = 1L;
 	
 	@Id

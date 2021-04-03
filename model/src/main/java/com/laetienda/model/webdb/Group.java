@@ -21,7 +21,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import com.laetienda.lib.form.FormMethod;
+import com.laetienda.lib.form.Form;
 import com.laetienda.lib.form.HtmlForm;
 import com.laetienda.lib.form.InputForm;
 import com.laetienda.lib.form.InputType;
@@ -38,7 +38,7 @@ import com.laetienda.model.lib.ValidateParameters;
 	@NamedQuery(name="Group.findByName", query="SELECT g FROM Group g WHERE g.name = :name")
 })
 @HtmlForm(name="Grupo")
-public class Group implements Serializable {
+public class Group implements Serializable, WebDb, Form {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -56,23 +56,25 @@ public class Group implements Serializable {
 	private Calendar modified;
 	
 	@Column(name="\"name\"", unique=true, nullable=false, length=254)
-	@ValidateParameters(name="\"name\"", nullable=false, minlenght = 3, regex = "[a-zA-Z]+")
+	@ValidateParameters(name="name", nullable=false, minlenght = 3, regex = "[a-zA-Z]+")
 	@InputForm(name = "name", type = InputType.TEXT, label="Name", id="groupNameInput", placeholder="Insert name of group")
 	private String name;	
 	
 	@Column(name="\"description\"", nullable = true, unique=false, length=254)
-	@ValidateParameters(name = "\"description\"", maxlenght = 254)
+	@ValidateParameters(name = "description", maxlenght = 254)
 	@InputForm(name="description", type = InputType.TEXT, label="Description", id="groupDescriptionInput", placeholder="Insert description of group (optional)")
 	private String description;
 	
 	@ElementCollection
 	@CollectionTable(name="group_owners")
 	@ValidateParameters(name="owners", nullable=false)
+	@InputForm(type = InputType.SELECT_MULTIPLE, options="groupOwnersOptions", id="groupOwnersInput", label = "Owners", name = "owners", placeholder = "Select the usernames of owners of the group")
 	private List<String> owners;
 	
 	@ElementCollection
 	@CollectionTable(name="group_members")
 	@ValidateParameters(name="members", nullable=false)
+	@InputForm(type = InputType.SELECT_MULTIPLE, options="groupMemberOptions", id="groupMemberInput", label="Members", name="members", placeholder = "Select the members of the group")
 	private List<String> members;
 	
 	public Group() {
@@ -121,6 +123,18 @@ public class Group implements Serializable {
 	public List<String> getOwners() {
 		return owners;
 	}
+	
+//	public List<SelectOption> getSelectOwners(){
+//		List<SelectOption> result = new ArrayList<SelectOption>();
+//		User u = new User();
+//		
+//		for(String username : u.getUsers()) {
+//			SelectOption o = new SelectOptionImpl(username, username, false, false);
+//			result.add(o);
+//		}
+//
+//		return result;
+//	}
 
 	public void setOwners(List<String> owners) {
 		this.owners = owners;

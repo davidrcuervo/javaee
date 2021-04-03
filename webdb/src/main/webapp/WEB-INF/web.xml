@@ -2,7 +2,14 @@
 <web-app id="WebApp_ID" version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"><!--Load application context-->
 	<listener>
 		<listener-class>com.laetienda.webdb.listener.Load</listener-class>
-	</listener><!--Group Service--><filter>
+	</listener><!--WebEngide filter to attach web bean--><filter>
+		<filter-name>WebEngine</filter-name>
+		<filter-class>com.laetienda.webdb.filter.WebEngineFilter</filter-class>
+</filter>
+	<filter-mapping>
+		<filter-name>WebEngine</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping><!--Group Service--><filter>
 		<filter-name>GroupFilter</filter-name>
 		<filter-class>com.laetienda.webdb.filter.GroupFilter</filter-class>
 </filter>

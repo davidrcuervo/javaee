@@ -1,0 +1,15 @@
+version: 1
+
+#!RESULT OK
+#!CONNECTION ldap://192.168.0.2:636
+#!DATE 2021-03-25T01:30:33.872
+dn: uid=admin.sesm,ou=people,dc=la-etienda,dc=com
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: Admin Sesm
+sn: Sesm
+uid: admin.sesm
+userPassword:: RW1DaVFQdHAxZUgxSTZheVdMRlg=
+

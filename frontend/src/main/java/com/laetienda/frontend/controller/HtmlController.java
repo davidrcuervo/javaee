@@ -29,6 +29,7 @@ public class HtmlController extends HttpServlet {
     	settings = (Settings)sc.getServletContext().getAttribute("settings");
     }
 
+    @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		WebEngine web = (WebEngine)request.getAttribute("web");
@@ -43,6 +44,11 @@ public class HtmlController extends HttpServlet {
 			request.getRequestDispatcher(HTML_PATH + "/" + template + path).forward(request, response);
 		}
 		
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doGet(request, response);
 	}
 
 }

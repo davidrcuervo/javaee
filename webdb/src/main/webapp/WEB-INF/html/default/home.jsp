@@ -7,4 +7,4 @@
 	<h1>WebDb home!!</h1>
 </c:set>
 
-<jsp:include page="/WEB-INF/template/webdb.template.jsp"></jsp:include>
+<jsp:include page="/WEB-INF/template/${settings.get('template')}/webdb.template.jsp"></jsp:include>

@@ -15,9 +15,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.Gson;
+import com.laetienda.lib.form.FormAction;
 import com.laetienda.lib.form.FormMethod;
 import com.laetienda.lib.form.FormRepoImpl;
 import com.laetienda.lib.form.FormRepository;
+import com.laetienda.lib.http.HttpTemplate;
+import com.laetienda.lib.http.TemplateRepository;
 import com.laetienda.model.webdb.Group;
 import com.laetienda.webdb.repository.GroupRepoImpl;
 import com.laetienda.webdb.repository.GroupRepository;
@@ -26,9 +30,10 @@ public class GroupFilter implements Filter {
 	final static private Logger log = LogManager.getLogger(GroupFilter.class);
 
 	private EntityManagerFactory emf;
+	private Gson gson;
 	
     public GroupFilter() {
-       
+       gson = new Gson();
     }
 
 	public void destroy() {
@@ -39,24 +44,32 @@ public class GroupFilter implements Filter {
 		
 		HttpServletRequest request = (HttpServletRequest)req;
 		HttpServletResponse response = (HttpServletResponse)resp;
+	
+		TemplateRepository formtemplate = new HttpTemplate();
+		Group group;
+		
+		formtemplate.setPostParameter("clazzName", Group.class.getCanonicalName());
 		
 		log.debug("$request.getPathInfo(): {}", request.getPathInfo());
+		log.debug("$clazzName: {}", Group.class.getCanonicalName());
 		
 		try {
 			String[] path = request.getPathInfo().split("/");
 			String action = path[1];
 			log.debug("$action: {}", action);
 	
-			Group group;
-			FormRepository form;
 			GroupRepository grepo = new GroupRepoImpl(emf);
 			
 			if(action.equals("add")) {
 				group = new Group();
-				form = new FormRepoImpl(group);
-				form.setMethod(FormMethod.POST);
-				request.setAttribute("form", form);
-				chain.doFilter(request, response);
+				
+				formtemplate.setPostParameter("method", gson.toJson(FormMethod.POST));
+				formtemplate.setPostParameter("action", gson.toJson(FormAction.CREATE));
+				formtemplate.setPostParameter("options", gson.toJson(grepo.getOptions(group)));
+				
+				request.setAttribute("group", group);
+				request.setAttribute("formtemplate", formtemplate);
+				chain.doFilter(req, resp);
 				
 			}else if(action.equals("show") || action.equals("edit") || action.equals("delete")) {
 				String gName = path[2];
@@ -66,18 +79,23 @@ public class GroupFilter implements Filter {
 					log.info("Group, \"{}\", does not exit.", gName);
 					response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				}else {
-					form = new FormRepoImpl(group);
+
 					if(action.equals("show") || action.equals("edit")) {
-						form.setMethod(FormMethod.PUT);
+						formtemplate.setPostParameter("method", gson.toJson(FormMethod.PUT));
+						formtemplate.setPostParameter("action", gson.toJson(FormAction.UPDATE));
 					}
 					
 					if(action.equals("delete")) {
-						form.setMethod(FormMethod.DELETE);
+						formtemplate.setPostParameter("method", gson.toJson(FormMethod.DELETE));
+						formtemplate.setPostParameter("action", gson.toJson(FormAction.DELETE));
 					}
 					
+					
+					formtemplate.setPostParameter("options", gson.toJson(grepo.getOptions(group)));
+					log.debug("$options: {}", gson.toJson(grepo.getOptions(group)));
+					
 					request.setAttribute("group", group);
-					request.setAttribute("form", form);
-					chain.doFilter(request, response);
+					chain.doFilter(req, resp);
 				}
 				
 			}else {

@@ -11,7 +11,7 @@ public @interface ValidateParameters {
 	
 	String name();
 	boolean nullable() default true;
-	int minlenght() default 1;
+	int minlenght() default 0;
 	int maxlenght() default 254;
 	int minvalue() default 0;
 	String regex() default "";

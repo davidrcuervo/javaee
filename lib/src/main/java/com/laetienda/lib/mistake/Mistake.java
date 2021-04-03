@@ -62,4 +62,8 @@ public class Mistake {
 	public void setSource(MistakeSource source) {
 		this.source = source;
 	}
+	
+	public String getValue() {
+		return getSource().getParameter();
+	}
 }

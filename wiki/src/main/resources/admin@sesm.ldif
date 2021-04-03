@@ -1,0 +1,9 @@
+version: 1
+
+dn: cn=admin@sesm,ou=groups,dc=la-etienda,dc=com
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: admin@sesm
+uniqueMember: uid=admin.sesm,ou=people,dc=la-etienda,dc=com
+uniqueMember: uid=myself,ou=people,dc=la-etienda,dc=com
+

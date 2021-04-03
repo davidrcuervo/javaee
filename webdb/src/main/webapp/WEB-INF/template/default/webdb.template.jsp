@@ -4,7 +4,7 @@
 <%@ page isELIgnored="false" %>
 
 <jsp:useBean id="template" class="com.laetienda.lib.http.HttpTemplate" scope="request">
-	<jsp:setProperty name="template" property="url" value="${settings.get('frontend.url') }" />
+	<jsp:setProperty name="template" property="url" value="${settings.get('frontend.template.url') }" />
 </jsp:useBean>
 
 ${template.setPostParameter("title", "WebDb")}
@@ -12,11 +12,10 @@ ${template.setPostParameter("title", "WebDb")}
 <!DOCTYPE html>
 <html>
 <head>
-	
-	<c:out value="${template.getQuickTemplate('/template/main/header')}" escapeXml="false"/>
+	<c:out value="${template.getHtmlTemplate('/header')}" escapeXml="false"/>
 </head>
 <body>
-	<header><c:out value="${template.getQuickTemplate('/template/main/menu')}" escapeXml="false"/></header>
+	<header><c:out value="${template.getHtmlTemplate('/menu')}" escapeXml="false"/></header>
 	<c:out value="${content}" escapeXml="false" />
 </body>
 </html>

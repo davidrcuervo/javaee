@@ -59,6 +59,7 @@ public class Settings {
 		p.put("tomcat.username", "tomcat");
 		p.put("tomcat.password", "clave1234");
 		p.put("fronted.url", "http://localhost:8080/fronted");
+		p.put("template", "default");
 		return p;
 	}
 	
