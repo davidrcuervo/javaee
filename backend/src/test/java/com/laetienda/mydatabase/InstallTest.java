@@ -22,7 +22,7 @@ import com.laetienda.backend.install.InstallData;
 import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.repository.AccessListRepository;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 class InstallTest {
 	private final static Logger log = LogManager.getLogger(InstallTest.class);
@@ -67,7 +67,7 @@ class InstallTest {
 		
 		try {
 			em = emf.createEntityManager();
-			String password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+			String password = new AesFirstRepoImpl().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
 			conn = ldap.getLdapConnection(Ajustes.LDAP_ADMIN_USER, password);
 			auth = new Authorization(conn);
 			installer.createObjects(em, conn, auth);

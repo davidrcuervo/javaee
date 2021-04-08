@@ -22,7 +22,7 @@ import com.laetienda.backend.install.InstallData;
 import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 class GroupTest {
 	private final static Logger log = LogManager.getLogger(Group.class);
@@ -45,7 +45,7 @@ class GroupTest {
 		InstallData installer = new InstallData();
 		
 		try {
-			String password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+			String password = new AesFirstRepoImpl().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
 			conn = ldap.getLdapConnection(Ajustes.LDAP_ADMIN_USER, password);
 			emf = db.createEntityManagerFactory();
 			em = emf.createEntityManager();
@@ -70,7 +70,7 @@ class GroupTest {
 		ldap = new Ldap();
 
 		try {
-			password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+			password = new AesFirstRepoImpl().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 			conn = ldap.getLdapConnection(Ajustes.LDAP_TOMCAT_DN, password);
 		} catch (Exception e) {
 			myCatch(e);

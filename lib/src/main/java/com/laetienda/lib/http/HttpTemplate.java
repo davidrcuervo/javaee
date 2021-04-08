@@ -61,6 +61,11 @@ public class HttpTemplate implements TemplateRepository {
 		httpClient.setPostParameter(key, Value);
 	}
 	
+	@Override
+	public void removePostParameter(String key) {
+		httpClient.removePostParameter(key);
+	}
+	
 	public void setTitle(String title) {
 		httpClient.setPostParameter("title", title);
 	}
@@ -124,5 +129,9 @@ public class HttpTemplate implements TemplateRepository {
 //		template.setTitle("titulo");
 		System.out.println(template.getHtmlTemplate("/form/form.html"));
 		
+	}
+	@Override
+	public String getPostParameter(String key) {
+		return httpClient.getPostParameter(key);
 	}
 }

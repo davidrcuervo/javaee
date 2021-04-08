@@ -3,6 +3,7 @@ package com.laetienda.lib.http;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
@@ -34,7 +35,7 @@ public class HttpQuickClient implements ClientRepository {
 	private CookieStore cookieStore;
 	
 	public HttpQuickClient() {
-		postParameters = new ArrayList<>();
+		postParameters = new ArrayList<NameValuePair>();
 		cookieStore = new BasicCookieStore();
 	}
 
@@ -51,11 +52,11 @@ public class HttpQuickClient implements ClientRepository {
 	public void setPostParameter(String key, String value) {
 		log.debug("$key: {} -> $value: {}", key, value);
 		if(postParameters == null) {
-			postParameters = new ArrayList<>();
+			postParameters = new ArrayList<NameValuePair>();
 		}
 		
-		log.debug(key.isBlank() ? "key isBlank" : "key isnot Blank");
-		log.debug(value.isBlank() ? "value isBlank" : "value isnot Blank");
+//		log.debug(key.isBlank() ? "key isBlank" : "key isnot Blank");
+//		log.debug(value.isBlank() ? "value isBlank" : "value isnot Blank");
 		
 		if(key == null || value == null || key.isBlank() || value.isBlank()) {
 			log.warn("key or value for postparameter is invalid. $key: {} -> $value: {}", key, value);
@@ -66,6 +67,17 @@ public class HttpQuickClient implements ClientRepository {
 	}
 	
 	@Override
+	public void removePostParameter(String key) {
+		List<NameValuePair> p = new ArrayList<NameValuePair>();
+		for(NameValuePair nvp : postParameters) {
+			if(nvp.getName().equals(key)) {
+				p.add(nvp);
+			}
+		}
+		
+		postParameters.removeAll(p);
+	}
+
 	public void setCookie(String key, String value, String domain) {
 		BasicClientCookie cookie = new BasicClientCookie(key, value);
 		cookie.setDomain(domain);
@@ -131,5 +143,17 @@ public class HttpQuickClient implements ClientRepository {
 	
 	public static void main(String[] args) {
 		
+	}
+
+	@Override
+	public String getPostParameter(String key) {
+		String result = null;
+		
+		for(NameValuePair pair : postParameters) {
+			if(key.equals(pair.getName())){
+				result = pair.getValue();
+			}
+		}
+		return result;
 	}
 }

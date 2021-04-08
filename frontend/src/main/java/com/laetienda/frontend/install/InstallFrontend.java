@@ -12,6 +12,7 @@ import com.laetienda.lib.model.Component;
 import com.laetienda.lib.model.Form;
 import com.laetienda.lib.model.UserJson;
 import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 public class InstallFrontend {
 	private final static Logger log = LogManager.getLogger(InstallFrontend.class);
@@ -24,7 +25,7 @@ public class InstallFrontend {
 	
 	public InstallFrontend(String username, String password){
 		settings = new Settings();
-		aes = new Aes();
+		aes = new AesFirstRepoImpl();
 		gson = new Gson();
 
 		backendUrl = settings.get("backend.url");
@@ -133,7 +134,7 @@ public class InstallFrontend {
 		
 		InstallFrontend install;
 		try {
-			String password = new Aes().decrypt(SYSADMIN_AES_PASSWORD, SYSADMIN);
+			String password = new AesFirstRepoImpl().decrypt(SYSADMIN_AES_PASSWORD, SYSADMIN);
 			install = new InstallFrontend(SYSADMIN, password);
 			install.doInstall();
 		} catch (Exception e) {

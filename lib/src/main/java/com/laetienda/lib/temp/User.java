@@ -10,7 +10,7 @@ import com.laetienda.lib.form.SelectOptionsGet;
 
 public class User implements SelectOptionsGet  {
 	
-	final static private List<String> usernames = Arrays.asList("MySelf", "admin.brdc", "admin.sesm", "tomcat"); 
+	final static private List<String> usernames = Arrays.asList("myself", "admin.brdc", "admin.sesm", "tomcat"); 
 
 	public User() {
 		

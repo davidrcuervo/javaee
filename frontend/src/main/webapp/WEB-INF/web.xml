@@ -64,7 +64,22 @@
 	<filter-mapping>
 		<filter-name>FormFilter</filter-name>
 		<url-pattern>/form/*</url-pattern>
+	</filter-mapping><!--Thankyou Page--><filter>
+		<filter-name>ThankyouPageFilter</filter-name>
+		<filter-class>com.laetienda.frontend.tomcat.ThankyouPageFilter</filter-class>
+</filter>
+	<filter-mapping>
+		<filter-name>ThankyouPageFilter</filter-name>
+		<url-pattern>/thankyou/*</url-pattern>
 	</filter-mapping>
+	<servlet>
+		<servlet-name>ThankyouPageController</servlet-name>
+		<servlet-class>com.laetienda.frontend.controller.ThankyouPageController</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ThankyouPageController</servlet-name>
+		<url-pattern>/thankyou/*</url-pattern>
+	</servlet-mapping><!--AUTHORIZATION CONFIGURATION-->
 	<security-role>
   	<description>all authenticated users</description>
   	<role-name>users</role-name>

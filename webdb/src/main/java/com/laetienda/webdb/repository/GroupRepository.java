@@ -14,6 +14,7 @@ public interface GroupRepository {
 	public void setEntityManagerFactory(EntityManagerFactory emf);
 	public void setUser(String username);
 	
+	public List<Group> getAllGroups();
 	public Group findByName(String name);
 	public Group findById(int id);
 	public boolean isMember(Group group, String uid);

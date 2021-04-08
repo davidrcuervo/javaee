@@ -1,5 +1,6 @@
 package com.laetienda.webdb.repository;
 
+import com.laetienda.lib.form.HtmlForm;
 import com.laetienda.lib.form.SelectOption;
 import com.laetienda.lib.mistake.Mistake;
 import com.laetienda.lib.temp.User;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +25,10 @@ public class GroupRepoImpl implements GroupRepository {
 	private EntityManagerFactory emf;
 	private String username;
 	
+	public GroupRepoImpl() {
+		
+	}
+	
 	public GroupRepoImpl(EntityManagerFactory emf, String username) {
 		setEntityManagerFactory(emf);
 		setUser(username);
@@ -31,14 +37,20 @@ public class GroupRepoImpl implements GroupRepository {
 	public GroupRepoImpl(EntityManagerFactory emf) {
 		this.emf = emf;
 	}
+	
+	public List<Group> getAllGroups(){
+		EntityManager em = emf.createEntityManager();
+		List<Group> result = em.createNamedQuery("Group.findAllAllowed", Group.class).setParameter("username", username).getResultList();
+		em.close();
+		return result;
+	}
 
 	public Group findByName(String name) {
 		Group result = null;
-		EntityManager em = emf.createEntityManager();;
+		EntityManager em = emf.createEntityManager();
 		
-		try {
-			
-			result = em.createNamedQuery("Group.findByName", Group.class).setParameter("name", name).getSingleResult();
+		try {			
+			result = em.createNamedQuery("Group.findByName", Group.class).setParameter("name", name).setParameter("username", username).getSingleResult();
 		}catch(IllegalStateException | PersistenceException e) {
 			log.warn("Failed to find group. $group -> {}", name);
 			log.debug("Failed to find group. $group -> {}", name, e);
@@ -69,8 +81,7 @@ public class GroupRepoImpl implements GroupRepository {
 		String groupname = null;
 		
 		try {
-			groupname = group.getName();
-			List<String> owners = findById(group.getId()).getMembers();
+			List<String> owners = findById(group.getId()).getOwners();
 			result = owners.contains(username);
 		}catch(Exception e) {
 			log.warn("Failed to find owner in group. $group: {} - $user: {}", groupname, username);
@@ -106,7 +117,9 @@ public class GroupRepoImpl implements GroupRepository {
 			name = group.getName();
 			validate.isValid(group);
 			
-			if(validate.getErrors().size() == 0) {
+			if(username == null) {
+				result.add(new Mistake(400, "Invalid User", "User must be logged.", group.getClass().getAnnotation(HtmlForm.class).name(), username));
+			}else if(validate.getErrors().size() == 0) {
 				
 				if(findByName(name) == null) {
 					em.getTransaction().begin();
@@ -114,8 +127,9 @@ public class GroupRepoImpl implements GroupRepository {
 					em.getTransaction().commit();
 					log.debug("Group, {}, has persisted succesfully", name);
 				}else {
-					log.warn("A group with name, \"{}\", already exists.", name);
-					result.add(new Mistake(400, "invalid group name", "invalid group name", this.getClass().getCanonicalName(), "Inserting group"));
+					String message = String.format("A group with name, \"%s\", already exists.", name);
+					log.warn(message);
+					result.add(new Mistake(400, "invalid group name", message, "name", name));
 				}
 				
 			}else {
@@ -145,6 +159,7 @@ public class GroupRepoImpl implements GroupRepository {
 		
 		try {			
 			name = group.getName();
+			validate.isValid(group);
 			
 			if(isOwner(group, username)) {
 				
@@ -158,8 +173,9 @@ public class GroupRepoImpl implements GroupRepository {
 					log.debug("{} can't be update, its values has errors. $errors: {}", name, validate.getErrors().size());
 				}
 			}else {
-				log.debug("User, \"{}\", does not have privileges to update group, \"{}\" ", username, name);
-				result.add(new Mistake(401, "User unauthorized", "User is not owner of group", "Group", name));
+				String message = String.format("User, \"%s\", does not have privileges to edit group, \"%s\".", username, name);
+				log.debug(message);
+				result.add(new Mistake(401, "User unauthorized", message, group.getClass().getAnnotation(HtmlForm.class).name(), name));
 			}
 			
 			result.addAll(validate.getErrors());
@@ -188,13 +204,15 @@ public class GroupRepoImpl implements GroupRepository {
 				em.getTransaction().commit();
 				log.debug("Group, {}, has removed succesfully.", name);
 			}else {
-				log.debug("User, \"{}\", does not have privileges to delete group, \"{}\" ", username, name);
-				result.add(new Mistake(401, "User unauthorized", "User is not owner of group", "Group", name));
+				String message = String.format("User, \"%s\", does not have privileges to delete group, \"%s\" ", username, name);
+				log.debug(message);
+				result.add(new Mistake(401, "User unauthorized", message, group.getClass().getAnnotation(HtmlForm.class).name(), name));
 			}
 		}catch(NullPointerException | PersistenceException e) {
+			String message = String.format("$exception: %s -> $message: %s", e.getClass().getCanonicalName(), e.getMessage());
 			log.warn("Failed to remove group. $name: {}", name);
 			log.debug("Failed to remove group. $group {}", name, e);
-			result.add(new Mistake(500, e.getClass().getCanonicalName(), e.getMessage(), this.getClass().getCanonicalName(), "delete group"));
+			result.add(new Mistake(500, "Server internal exceptions", message, group.getClass().getDeclaredAnnotation(HtmlForm.class).name(), name));
 		}		
 		
 		return result;
@@ -259,13 +277,43 @@ public class GroupRepoImpl implements GroupRepository {
 		User user = new User();
 		List<SelectOption> result = user.getSelectOptions();
 		
+		for(String o : group.getOwners()) {
+			log.debug("$owner: {}", o);
+		}
+		
 		for(SelectOption opt : result) {
-			
 			if(group.getOwners().contains(opt.getValue())) {
 				opt.setSelected(true);
 			}
+			log.debug("$opt.label: {}, $opt.value: {}, $opt.selected: {}, $opt.disabled: {}", opt.getLabel(), opt.getValue(), opt.getSelected(), opt.getDisabled());
 		}
 	
 		return result;
+	}
+	
+	public static void main (String[] args) {
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.laetienda.webdb");
+		GroupRepository grepo = new GroupRepoImpl(emf);
+		Group group = new Group();
+		User user = new User();
+		
+		group.setName("");
+		group.setDescription("");
+		user.getSelectOptions();
+		grepo.addOwner(group, "MySelf");
+		
+		for(String o : group.getOwners()) {
+			log.debug("$owner: {}", o);
+		}
+		
+		Map<String, List<SelectOption>> options = grepo.getOptions(group);
+		
+		for(SelectOption o : options.get("groupOwnersOptions")) {
+			log.debug("$SelectOptions. $label: {}, $value: {}, $selected: {}, $disabled: {}", o.getLabel(), o.getValue(), o.getSelected(), o.getSelected());
+		}
+	}
+	
+	public String getUsername() {
+		return username;
 	}
 }

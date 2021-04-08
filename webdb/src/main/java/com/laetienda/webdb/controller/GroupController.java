@@ -1,9 +1,9 @@
 package com.laetienda.webdb.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManagerFactory;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,15 +14,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
+import com.laetienda.lib.form.FormAction;
+import com.laetienda.lib.form.HtmlForm;
 import com.laetienda.lib.http.ClientRepository;
 import com.laetienda.lib.http.HttpQuickClient;
-import com.laetienda.lib.http.HttpTemplate;
 import com.laetienda.lib.http.TemplateRepository;
 import com.laetienda.lib.mistake.Mistake;
 import com.laetienda.lib.mistake.MistakeRepoImpl;
 import com.laetienda.model.webdb.Group;
+import com.laetienda.model.webdb.ThankyouPage;
 import com.laetienda.webdb.lib.Settings;
-import com.laetienda.webdb.repository.GroupRepoImpl;
 import com.laetienda.webdb.repository.GroupRepository;
 
 public class GroupController extends HttpServlet {
@@ -31,10 +32,11 @@ public class GroupController extends HttpServlet {
 	
 	private Group group;
 	private String template;
-	private EntityManagerFactory emf;
 	private Settings settings;
 	private TemplateRepository formtemplate;
 	private Gson gson;
+	private GroupRepository grepo;
+	private List<Mistake> mistakes;
 	
     public GroupController() {
         super();
@@ -43,13 +45,14 @@ public class GroupController extends HttpServlet {
 
 	public void init(ServletConfig config) throws ServletException {
 		settings = (Settings)config.getServletContext().getAttribute("settings");
-		emf = (EntityManagerFactory)config.getServletContext().getAttribute("emf");
 		template = settings.get("template");
 	}
 
 	public void doBuild(HttpServletRequest request) throws ServletException, IOException{
 		group = (Group)request.getAttribute("group");
+		grepo = (GroupRepository)request.getAttribute("grepo");
 		formtemplate = (TemplateRepository)request.getAttribute("formtemplate");
+		mistakes = new ArrayList<Mistake>();
 		log.debug("$template: {}", template);
 	}
 
@@ -61,53 +64,61 @@ public class GroupController extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doBuild(request);
-		GroupRepository grepo = new GroupRepoImpl(emf);
-//		Group group = new Group();
 		
+		FormAction action = gson.fromJson(formtemplate.getPostParameter("action"), FormAction.class);
 		loadParameters(request, grepo);		
-		List<Mistake> mistakes = grepo.insert(group);
+			
+		log.debug("$action: {}", action);
+		if(action.equals(FormAction.UPDATE)) {
+			mistakes = grepo.update(group);
+			
+		}else if(action.equals(FormAction.CREATE)) {
+			mistakes = grepo.insert(group);
+			
+		}else if(action.equals(FormAction.DELETE)) {
+			mistakes = grepo.delete(group);
+			doDelete(request, response);
+		}else {
+			mistakes.add(new Mistake(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", "Action not permited while posting in group", group.getClass().getAnnotation(HtmlForm.class).name(), action.toString()));
+		}
 		
 		
 		if(mistakes.size() > 0) {
 			MistakeRepoImpl errors = new MistakeRepoImpl(mistakes);
 			log.debug("Group post errors: {}", gson.toJson(errors));
-			log.debug("$mistake.name.title: {}", errors.getMistakeByName("name").get(0).getTitle());
 			log.debug("$groupjson: {}", gson.toJson(group));
 			formtemplate.setPostParameter("mistakes", gson.toJson(errors));
 			formtemplate.setPostParameter("rowdatajson", gson.toJson(group));
+			formtemplate.removePostParameter("options");
 			formtemplate.setPostParameter("options", gson.toJson(grepo.getOptions(group)));
 			doGet(request, response);
 			
 		}else {
 			String tempurl = String.format("%sthankyou/group/add/%s", settings.get("frontend.url"), group.getId());
 			log.debug("$thankyou url: {}", tempurl);
-			postthankyoutoken(tempurl, response);
+			postthankyoutoken(tempurl, request, response);
 			response.sendRedirect(tempurl);
 		}
 	}
 
-
-
-
-	private void postthankyoutoken(String tempurl, HttpServletResponse response) throws IOException {
+	private void postthankyoutoken(String tempurl, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		ClientRepository httpClient = new HttpQuickClient();
-		httpClient.setPostParameter("thankyoutoken", tempurl);
-		String url = String.format("%s/thankyoutoken", settings.get("frontend.url"));
-		log.debug("$thankyoutoken url: {}", url);
-		String result = httpClient.post(url);
 		
-		if(result == null || result.isBlank()) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		ThankyouPage thkpage = new ThankyouPage();
+		thkpage.setKey(tempurl);
+		thkpage.setSource(request.getRequestURL().toString());
+		
+		httpClient.setPostParameter("thkpagejson", gson.toJson(thkpage));
+
+		String resultjson = httpClient.post(tempurl);
+		String result = gson.fromJson(resultjson, String.class);
+		log.debug("$resultjson: {}, $result: {}", resultjson, result);
+		
+		if(result != null && !result.isBlank() && result.equals("OK")) {
+			log.debug("Thankyou token posted succesfully");
+		}else {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);			
 		}
-	}
-
-	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-	}
-
-
-	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
 	}
 
 	private void loadParameters(HttpServletRequest request, GroupRepository grepo) {
@@ -115,6 +126,9 @@ public class GroupController extends HttpServlet {
 		group.setDescription(request.getParameter("description"));
 		String[] owners = request.getParameterValues("owners");
 		String[] members = request.getParameterValues("members");
+		
+		group.getMembers().clear();
+		group.getOwners().clear();
 		
 		if(owners != null) { 
 			for(String owner : owners) {
@@ -126,6 +140,10 @@ public class GroupController extends HttpServlet {
 			for(String member : members) {
 				grepo.addMember(group, member);
 			}
+		}
+		
+		for(String m : group.getMembers()) {
+			log.debug("$member: {}", m);
 		}
 	}
 }

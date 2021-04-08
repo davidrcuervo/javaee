@@ -4,8 +4,11 @@
 	<jsp:setProperty name="web" property="httpServletRequest" value="<%=request%>" />
 </jsp:useBean>
 
-<c:set var="action" value="${web.href('/j_security_check') }" scope="request"/>
-<c:import var="htmlLoginForm" url="/WEB-INF/jsp/template/main/login.jsp" />
+<c:if test="${not empty web }">
+	<c:set var="action" value="${web.href('/j_security_check') }" scope="request"/>
+</c:if>
+
+<c:import var="htmlLoginForm" url="/WEB-INF/jsp/template/${settings.get('frontend.template') }/login.jsp" />
 
 <c:set target="${web}" property="title" value="login" />
 <c:set target="${web}" property="active" value="wiki" />

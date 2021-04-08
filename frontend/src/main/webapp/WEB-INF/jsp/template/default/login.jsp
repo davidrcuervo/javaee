@@ -19,7 +19,7 @@
   		</div>
   		<button type="submit" class="btn btn-primary btn-block">Submit</button>
 	</form>
-	<%-- <c:out value="${loginError}" escapeXml="false"/> --%>
+	<%-- <div>loginerror: <c:out value="${param.loginerror}" escapeXml="false"/></div> --%>
 	<c:if test="${loginError eq 'true' || param.loginerror eq 'true'}">
 		<div class="alert alert-danger" role="alert">
 		  	Wrong password or username!!!.

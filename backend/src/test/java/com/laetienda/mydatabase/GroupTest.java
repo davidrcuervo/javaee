@@ -15,7 +15,7 @@ import org.laetienda.backend.engine.Ldap;
 import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.Group;
 import com.laetienda.backend.myldap.User;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 public class GroupTest {
 	private static final Logger log = LogManager.getLogger();
@@ -112,7 +112,7 @@ public class GroupTest {
 		LdapConnection conn = null;
 
 		try {
-			String password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+			String password = new AesFirstRepoImpl().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
 			conn=ldap.getLdapConnection(Ajustes.LDAP_ADMIN_USER, password);
 			test.add(conn);
 //			test.addUser("Test Group", "manager", conn);

@@ -23,6 +23,7 @@ import com.laetienda.backend.repository.AccessListRepository;
 import com.laetienda.backend.test.AppContext;
 import com.laetienda.lib.model.AccessList;
 import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 class AccessListServiceTest {
 	private final static Logger log = LogManager.getLogger(AccessListRepository.class);
@@ -50,7 +51,7 @@ class AccessListServiceTest {
 	
 	@BeforeEach
 	public void doBefore() {
-		aes = new Aes();
+		aes = new AesFirstRepoImpl();
 		ldap = new Ldap();
 		gson = new Gson();
 		emf = (EntityManagerFactory)app.getAttribute("emf");

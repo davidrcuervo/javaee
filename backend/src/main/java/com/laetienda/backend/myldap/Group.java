@@ -28,7 +28,7 @@ import org.laetienda.backend.engine.Ldap;
 import com.laetienda.backend.myapptools.FormBeanInterface;
 import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.lib.mistake.MistakeDeprecated;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 import com.laetienda.lib.utilities.Tools;
 
 public class Group implements Serializable, FormBeanInterface, LdapEntity {
@@ -375,7 +375,7 @@ public class Group implements Serializable, FormBeanInterface, LdapEntity {
 	
 	public static void main(String[] args) throws Exception {
 		Ldap ldap = new Ldap();
-		String password = new Aes().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
+		String password = new AesFirstRepoImpl().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
 		LdapConnection conn = ldap.getLdapConnection("uid=sysadmin," + Ajustes.LDAP_PEOPLE_DN, password);
 		
 		log.debug(conn.isConnected() ? "conn is connected" : "conn is not connected");

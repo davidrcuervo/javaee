@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -130,5 +131,22 @@ public class WebEngine {
 
 	public void setIcon(String icon) {
 		this.icon = icon;
+	}
+	
+	public String logout() {
+		log.debug("Closing user session.");
+		String result = "Failed to logout";
+		
+		HttpSession session = req.getSession(false);
+		
+		if(session != null) {
+			log.debug("Session exists");
+			session.invalidate();
+			result = logout();
+		}else {
+			result = "Session has closed successfully";
+		}
+		
+		return result;
 	}
 }

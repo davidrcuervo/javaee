@@ -25,6 +25,7 @@ import com.laetienda.lib.model.AccessList;
 import com.laetienda.lib.model.Component;
 import com.laetienda.lib.model.Wiki;
 import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 class ComponentServiceTest {
 	private final static Logger log = LogManager.getLogger(ComponentService.class);
@@ -54,7 +55,7 @@ class ComponentServiceTest {
 	
 	@BeforeEach
 	public void doBefore() {
-		aes = new Aes();
+		aes = new AesFirstRepoImpl();
 		ldap = new Ldap();
 		gson = new Gson();
 		emf = (EntityManagerFactory)app.getAttribute("emf");

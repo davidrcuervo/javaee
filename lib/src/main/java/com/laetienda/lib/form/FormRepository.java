@@ -9,6 +9,7 @@ public interface FormRepository {
 	public FormMethod getMethod();
 	public FormAction getAction();
 	public String getButton();
+	public String getName();
 	public void setMethod(FormMethod method);
 	public void setAction(FormAction action);
 	

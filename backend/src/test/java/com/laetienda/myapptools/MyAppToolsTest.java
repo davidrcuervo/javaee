@@ -22,7 +22,7 @@ import com.laetienda.backend.install.InstallData;
 import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.repository.AccessListRepository;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 class MyAppToolsTest {
 	private final static Logger log = LogManager.getLogger();
@@ -44,7 +44,7 @@ class MyAppToolsTest {
 		LdapConnection conn = null;
 		
 		try {
-			String password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+			String password = new AesFirstRepoImpl().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
 
 			conn = ldap.getLdapConnection(Ajustes.LDAP_ADMIN_USER, password);
 			emf = db.createEntityManagerFactory();
@@ -70,7 +70,7 @@ class MyAppToolsTest {
 		ldap = new Ldap();
 		db = new Db();
 		try {
-			String password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+			String password = new AesFirstRepoImpl().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 			em = emf.createEntityManager();
 			conn = ldap.getLdapConnection("tomcat", password);
 		} catch (Exception e) {
@@ -90,7 +90,7 @@ class MyAppToolsTest {
 		EntityManager em = null;
 		
 		try {
-			String password = new Aes().decrypt(Ajustes.MANAGER_AES_PASS, "manager");
+			String password = new AesFirstRepoImpl().decrypt(Ajustes.MANAGER_AES_PASS, "manager");
 			Authorization auth = new Authorization("manager", password, tables);
 			em = emf.createEntityManager();
 			TypedQuery<?> query = em.createNamedQuery("AccessList.findByName", AccessListRepository.class).setParameter("name", "manager");

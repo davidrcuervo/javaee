@@ -17,7 +17,7 @@ import com.google.gson.Gson;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.service.UserService;
 import com.laetienda.lib.model.UserJson;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 public class UserController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -206,12 +206,12 @@ public class UserController extends HttpServlet {
 	
 	public static void main (String[] args) {
 		try {
-			String encrypted = new Aes().encrypt("T5UyVYjdMRPr9dqY", "tomcat");
+			String encrypted = new AesFirstRepoImpl().encrypt("T5UyVYjdMRPr9dqY", "tomcat");
 			String encoded = URLEncoder.encode(encrypted, "UTF-8");
 			log.debug("encypted password: {}", encrypted);
 			log.debug("encoded: {}", encoded);
 			String decoded = URLDecoder.decode(encoded, "UTF-8");
-			String password = new Aes().decrypt(decoded, "tomcat");
+			String password = new AesFirstRepoImpl().decrypt(decoded, "tomcat");
 			log.debug("$decoded: {}", decoded);
 			log.debug("$password: {}", password);
 		} catch (Exception e) {

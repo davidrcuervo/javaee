@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 
 public class FormRepoImpl implements FormRepository {
 	final static private Logger log = LogManager.getLogger(FormRepoImpl.class);
@@ -24,7 +23,8 @@ public class FormRepoImpl implements FormRepository {
 	private String button;
 	private Map<String, List<SelectOption>> options;
 	private Form rowdata;
-	
+	private String name;
+
 	public FormRepoImpl(Object entity) {
 		
 		if(entity instanceof Form) {
@@ -38,6 +38,7 @@ public class FormRepoImpl implements FormRepository {
 			method = form.method();
 			action = form.action();
 			button = form.button();
+			name = form.name();
 			inputs = new ArrayList<InputRepository>();
 			loadInputs(entity);
 		}
@@ -132,5 +133,10 @@ public class FormRepoImpl implements FormRepository {
 		}
 		
 		return result;
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 }

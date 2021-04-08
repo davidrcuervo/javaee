@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myldap.User;
 import com.laetienda.backend.service.UserService;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 class UserServiceTest {
 	
@@ -27,7 +27,7 @@ class UserServiceTest {
 		service = new UserService();
 		
 		try {
-			password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+			password = new AesFirstRepoImpl().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 		} catch (GeneralSecurityException e) {
 			fail("Failed to decrypt tomcat password.");
 		}

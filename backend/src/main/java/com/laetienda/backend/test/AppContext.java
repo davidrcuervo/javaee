@@ -22,7 +22,7 @@ import com.laetienda.backend.myapptools.Ajustes;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.repository.AccessListRepository;
 import com.laetienda.lib.model.AccessList;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 public class AppContext {
 	private final static Logger log = LogManager.getLogger(AppContext.class);
@@ -72,7 +72,7 @@ public class AppContext {
 		String password;
 		Authorization auth;
 		
-		password = new Aes().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
+		password = new AesFirstRepoImpl().decrypt(Ajustes.LDAP_ADIN_AES_PASSWORD, Ajustes.LDAP_ADMIN_USER);
 		Dn admindn = new Dn(Ajustes.LDAP_ADMIN_USER);
 		log.info("Admin DN created succesfully. $dn: {}", admindn.getName());
 		auth = new Authorization(admindn, password, tables);
@@ -85,7 +85,7 @@ public class AppContext {
 		String password;
 		Authorization auth;
 		
-		password = new Aes().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
+		password = new AesFirstRepoImpl().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
 		auth = new Authorization("sysadmin", password, tables);
 				
 		return auth;
@@ -108,7 +108,7 @@ public class AppContext {
 	}
 	
 	private LdapConnection setTomcatLdapConnection() throws Exception {
-		String password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+		String password = new AesFirstRepoImpl().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 		return ldap.getLdapConnection(Ajustes.LDAP_TOMCAT_DN, password);
 		
 	}

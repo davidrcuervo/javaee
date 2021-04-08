@@ -20,7 +20,7 @@ public class Tools{
 	private Aes aes;
 	
 	public Tools(){
-		aes = new Aes();
+		aes = new AesFirstRepoImpl();
 	}
 	
 	public HashMap<String, List<String>> addError(String list, String error, HashMap<String, List<String>> errors){
@@ -54,7 +54,7 @@ public class Tools{
 		
 		String encoded = new String();
 		try {
-			String encrypted = new Aes().encrypt(password, username);
+			String encrypted = new AesFirstRepoImpl().encrypt(password, username);
 			encoded = URLEncoder.encode(encrypted, "UTF-8");
 		} catch (Exception e) {
 			log.warn("Failed to encode and encrypt password. $exception: {} -> {}", e.getClass().getSimpleName(), e.getMessage());
@@ -86,7 +86,7 @@ public class Tools{
     	Tools tools = new Tools();
     	String password = "T5UyVYjdMRPr9dqY";
     	String username = "tomcat";
-    	String encrypted = new Aes().encrypt(password, username);
+    	String encrypted = new AesFirstRepoImpl().encrypt(password, username);
     	String encoded = URLEncoder.encode(encrypted, StandardCharsets.ISO_8859_1);
     	
     	String temp = tools.decodeAndDecrypt(encoded, username);

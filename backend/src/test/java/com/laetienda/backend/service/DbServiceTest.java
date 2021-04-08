@@ -28,7 +28,7 @@ import com.laetienda.backend.repository.ComponentRepository;
 import com.laetienda.backend.test.AppContext;
 import com.laetienda.lib.model.AccessList;
 import com.laetienda.lib.model.Component;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 class DbServiceTest {
 	private final static Logger log = LogManager.getLogger(DbServiceTest.class);
@@ -65,9 +65,9 @@ class DbServiceTest {
 		
 		try {
 			em = emf.createEntityManager();
-			String password = new Aes().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
+			String password = new AesFirstRepoImpl().decrypt(Ajustes.SYSADMIN_AES_PASS, "sysadmin");
 			authSysadmin = new Authorization("sysadmin", password, tables);
-			password = new Aes().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
+			password = new AesFirstRepoImpl().decrypt(Ajustes.TOMCAT_AES_PASS, "tomcat");
 			connTomcat = ldap.getLdapConnection(Ajustes.LDAP_TOMCAT_DN, password);
 			service = new DbService(emf, authSysadmin, connTomcat);
 		} catch (Exception e) {

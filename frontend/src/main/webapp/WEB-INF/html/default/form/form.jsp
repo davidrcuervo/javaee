@@ -52,3 +52,7 @@
 	</c:forEach>
 	<button type="submit" class="btn btn-primary">${form.action}</button>
 </form>
+<c:forEach var="mistake" items="${mistakes.getMistakeByName(form.name) }">
+	<div><c:out value="${mistake.title }" /></div>
+	<div><span class="small"><c:out value="${mistake.detail }" /></span></div>
+</c:forEach>

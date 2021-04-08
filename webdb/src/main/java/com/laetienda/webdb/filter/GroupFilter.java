@@ -18,8 +18,6 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.laetienda.lib.form.FormAction;
 import com.laetienda.lib.form.FormMethod;
-import com.laetienda.lib.form.FormRepoImpl;
-import com.laetienda.lib.form.FormRepository;
 import com.laetienda.lib.http.HttpTemplate;
 import com.laetienda.lib.http.TemplateRepository;
 import com.laetienda.model.webdb.Group;
@@ -58,7 +56,8 @@ public class GroupFilter implements Filter {
 			String action = path[1];
 			log.debug("$action: {}", action);
 	
-			GroupRepository grepo = new GroupRepoImpl(emf);
+			String username = request.getUserPrincipal() == null ? null : request.getUserPrincipal().getName();
+			GroupRepository grepo = new GroupRepoImpl(emf, username);
 			
 			if(action.equals("add")) {
 				group = new Group();
@@ -67,6 +66,7 @@ public class GroupFilter implements Filter {
 				formtemplate.setPostParameter("action", gson.toJson(FormAction.CREATE));
 				formtemplate.setPostParameter("options", gson.toJson(grepo.getOptions(group)));
 				
+				request.setAttribute("grepo", grepo);
 				request.setAttribute("group", group);
 				request.setAttribute("formtemplate", formtemplate);
 				chain.doFilter(req, resp);
@@ -81,20 +81,23 @@ public class GroupFilter implements Filter {
 				}else {
 
 					if(action.equals("show") || action.equals("edit")) {
-						formtemplate.setPostParameter("method", gson.toJson(FormMethod.PUT));
+						formtemplate.setPostParameter("method", gson.toJson(FormMethod.POST));
 						formtemplate.setPostParameter("action", gson.toJson(FormAction.UPDATE));
 					}
 					
 					if(action.equals("delete")) {
-						formtemplate.setPostParameter("method", gson.toJson(FormMethod.DELETE));
+						formtemplate.setPostParameter("method", gson.toJson(FormMethod.POST));
 						formtemplate.setPostParameter("action", gson.toJson(FormAction.DELETE));
 					}
 					
 					
 					formtemplate.setPostParameter("options", gson.toJson(grepo.getOptions(group)));
+					formtemplate.setPostParameter("rowdatajson", gson.toJson(group));
 					log.debug("$options: {}", gson.toJson(grepo.getOptions(group)));
 					
+					request.setAttribute("grepo", grepo);
 					request.setAttribute("group", group);
+					request.setAttribute("formtemplate", formtemplate);
 					chain.doFilter(req, resp);
 				}
 				

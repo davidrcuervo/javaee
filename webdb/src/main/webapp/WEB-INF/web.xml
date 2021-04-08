@@ -33,5 +33,26 @@
 	<servlet-mapping>
 		<servlet-name>Html</servlet-name>
 		<url-pattern>*.html</url-pattern>
-	</servlet-mapping>
+	</servlet-mapping><!--**SECURITY CONFIGURACION**--><security-constraint>
+		<web-resource-collection>
+			<web-resource-name>users</web-resource-name>
+			<url-pattern>/group.html</url-pattern>
+			<url-pattern>/group/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>users</role-name></auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>NONE</transport-guarantee>
+		</user-data-constraint>
+</security-constraint>
+	<security-role>
+		<description>All authenticated users</description>
+		<role-name>users</role-name>
+	</security-role>
+	<login-config>
+		<auth-method>FORM</auth-method>
+		<form-login-config>
+			<form-login-page>/WEB-INF/html/login.jsp</form-login-page>
+			<form-error-page>/WEB-INF/template/errorLogin.jsp</form-error-page>
+		</form-login-config></login-config>
 </web-app>

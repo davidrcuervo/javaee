@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 import com.laetienda.backend.repository.RepositoryInterface;
 import com.laetienda.lib.model.Component;
 import com.laetienda.lib.model.Objeto;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 public class Db {
 	final private static Logger log = LogManager.getLogger(Db.class); 
@@ -42,7 +42,7 @@ public class Db {
 	}
 	
 	public EntityManagerFactory createEntityManagerFactory() throws GeneralSecurityException {
-		String password = new Aes().decrypt(DB_AES_PASSWORD, DB_USERNAME);
+		String password = new AesFirstRepoImpl().decrypt(DB_AES_PASSWORD, DB_USERNAME);
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put("javax.persistence.jdbc.password", password);
 		return Persistence.createEntityManagerFactory(DB_PERSISTENCE_UNIT_NAME, properties);

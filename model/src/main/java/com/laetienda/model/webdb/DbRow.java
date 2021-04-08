@@ -8,15 +8,15 @@ import javax.persistence.*;
 @Entity
 @Table(name="web_db_objects")
 @NamedQueries({
-	@NamedQuery(name="WebDB.findall", query="SELECT w FROM WebDb w")
+	@NamedQuery(name="WebDB.findall", query="SELECT w FROM DbRow w")
 })
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class DbRow implements Serializable, WebDb{	
 	private static final long serialVersionUID = 1L;
 	
 	@Id
-	@SequenceGenerator(name = "objeto_id_seq", sequenceName = "objeto_id_seq", allocationSize=1)
-	@GeneratedValue(generator = "objeto_id_seq", strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(name = "dbrow_id_seq", sequenceName = "dbrow_id_seq", allocationSize=1)
+	@GeneratedValue(generator = "dbrow_id_seq", strategy = GenerationType.SEQUENCE)
 	@Column(name="\"id\"")
 	private Integer id;
 	

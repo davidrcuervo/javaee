@@ -35,7 +35,8 @@ import com.laetienda.model.lib.ValidateParameters;
 @Table(name="grupo")
 @NamedQueries({
 	@NamedQuery(name="Group.findall", query="SELECT g FROM Group g"),
-	@NamedQuery(name="Group.findByName", query="SELECT g FROM Group g WHERE g.name = :name")
+	@NamedQuery(name="Group.findByName", query="SELECT g FROM Group g JOIN g.members m WHERE m = :username AND g.name = :name"),
+	@NamedQuery(name="Group.findAllAllowed" , query="SELECT g FROM Group g JOIN g.members m WHERE m = :username")
 })
 @HtmlForm(name="Grupo")
 public class Group implements Serializable, WebDb, Form {

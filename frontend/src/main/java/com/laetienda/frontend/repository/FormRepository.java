@@ -13,6 +13,7 @@ import com.laetienda.lib.model.Form;
 import com.laetienda.lib.model.Input;
 import com.laetienda.lib.utilities.InputVerification;
 
+@Deprecated
 public class FormRepository {
 	private final static Logger log = LogManager.getLogger(FormRepository.class);
 	

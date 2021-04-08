@@ -2,8 +2,10 @@
 
 public interface TemplateRepository {
 
-	void setPostParameter(String key, String Value);
-	void setCookieDomain(String cookieDomain);
-	void setUrl(String url);
-	String getHtmlTemplate(String url);
+	public void setPostParameter(String key, String Value);
+	public void removePostParameter(String key);
+	public void setCookieDomain(String cookieDomain);
+	public void setUrl(String url);
+	public String getHtmlTemplate(String url);
+	public String getPostParameter(String key);
 }

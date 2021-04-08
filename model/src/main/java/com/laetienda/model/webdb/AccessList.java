@@ -18,8 +18,8 @@ public class AccessList implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	@Id
-	@SequenceGenerator(name = "objeto_id_seq", sequenceName = "objeto_id_seq", allocationSize=1)
-	@GeneratedValue(generator = "objeto_id_seq", strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(name = "accesslist_id_seq", sequenceName = "accesslist_id_seq", allocationSize=1)
+	@GeneratedValue(generator = "accesslist_id_seq", strategy = GenerationType.SEQUENCE)
 	@Column(name="\"id\"")
 	private Integer id;
 	

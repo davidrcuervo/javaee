@@ -2,6 +2,7 @@ package com.laetienda.frontend.repository;
 
 import com.laetienda.lib.model.Input;
 
+@Deprecated
 public class InputRepository {
 	
 	private Input input;

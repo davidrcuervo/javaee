@@ -7,7 +7,14 @@
 	<jsp:setProperty name="template" property="url" value="${settings.get('frontend.template.url') }" />
 </jsp:useBean>
 
-${template.setPostParameter("title", "WebDb")}
+<c:if test="${not empty template}">
+	${template.setPostParameter("title", "WebDb")}
+	${template.setPostParameter("context", pageContext.request.contextPath)}
+</c:if>
+
+<c:if test="${not empty pageContext.request.userPrincipal}">
+	${template.setPostParameter("uid", pageContext.request.userPrincipal.name) }
+</c:if>
 
 <!DOCTYPE html>
 <html>
@@ -16,6 +23,6 @@ ${template.setPostParameter("title", "WebDb")}
 </head>
 <body>
 	<header><c:out value="${template.getHtmlTemplate('/menu')}" escapeXml="false"/></header>
-	<c:out value="${content}" escapeXml="false" />
+	<main><c:out value="${content}" escapeXml="false" /></main>
 </body>
 </html>

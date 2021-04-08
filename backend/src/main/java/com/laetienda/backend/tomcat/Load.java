@@ -21,7 +21,7 @@ import com.laetienda.backend.install.InstallData;
 import com.laetienda.backend.myauth.AuthTables;
 import com.laetienda.backend.repository.AccessListRepository;
 import com.laetienda.lib.model.AccessList;
-import com.laetienda.lib.utilities.Aes;
+import com.laetienda.lib.utilities.AesFirstRepoImpl;
 
 /**
  * Application Lifecycle Listener implementation class Load
@@ -73,9 +73,9 @@ public class Load implements ServletContextListener {
 			
 			//for developing porposes the installer will run every time
 			em = emf.createEntityManager();
-			passTomcat = new Aes().decrypt(LDAP_ADIN_AES_PASSWORD, LDAP_ADMIN_USER);
+			passTomcat = new AesFirstRepoImpl().decrypt(LDAP_ADIN_AES_PASSWORD, LDAP_ADMIN_USER);
 			authTomcat = new Authorization(new Dn(LDAP_ADMIN_USER), passTomcat, tables);
-			passSysadmin = new Aes().decrypt(SYSADMIN_AES_PASS, "sysadmin");
+			passSysadmin = new AesFirstRepoImpl().decrypt(SYSADMIN_AES_PASS, "sysadmin");
 			authSysadmin = new Authorization("sysadmin", passSysadmin, tables);
 			
 			installer.createLdapObjects(authTomcat);
