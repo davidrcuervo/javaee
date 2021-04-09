@@ -45,17 +45,17 @@ public class Usuario implements Serializable {
 	
 	@Column(name="\"username\"", nullable=false, unique=true)
 	@LdapAttribute(attribute="cn")
-	@ValidateParameters(name="username", nullable=false, minlenght=5, maxlenght=100)
+	@ValidateParameters(name="username", nullable=false, minlenght=5, maxlenght=100, regex = "[a-zA-Z0-9]+")
 	private String username;
 
 	@Transient
 	@LdapAttribute(attribute="givenname")
-	@ValidateParameters(name="First_Name", nullable=false, regex = "[a-zA-Z]+")
+	@ValidateParameters(name="First_Name", nullable=false, regex = "[a-zA-Z\\s]+")
 	private String givenname;
 	
 	@Transient
 	@LdapAttribute(attribute="sn")
-	@ValidateParameters(name="Last_Name", nullable=false, regex = "[a-zA-Z]+")
+	@ValidateParameters(name="Last_Name", nullable=false, regex = "[a-zA-Z\\s]+")
 	private String surname;
 	
 	@Transient
@@ -76,6 +76,19 @@ public class Usuario implements Serializable {
 	public Usuario() {
 		super();
 	}
+	
+	
+
+	public Usuario(String username, String givenname, String surname, String mail, String password) {
+		super();
+		setUsername(username);
+		setFirstName(givenname);
+		setLastName(surname);
+		setEmail(mail);
+		setPassword(password);
+	}
+
+
 
 	public Status getStatus() {
 		return status;

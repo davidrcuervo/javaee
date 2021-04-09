@@ -19,6 +19,7 @@ import com.laetienda.model.webdb.Usuario;
 import com.laetienda.user.lib.Settings;
 
 import javax.naming.Context;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -26,6 +27,8 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -39,6 +42,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	private EntityManagerFactory emf;
 	private Settings settings;
 	private String username;
+	private Integer userId;
 	private DirContext ctx;
 	
 	public UsuarioJndiRepoImpl() {
@@ -51,10 +55,6 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		setUsername(username);
 	}
 	
-	private void setUsername(String username2) {
-		this.username = username2;
-	}
-
 	public void setEntityManagerFactory(EntityManagerFactory emf) {
 		this.emf = emf;
 	}
@@ -62,6 +62,26 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	public void setSettings(Settings settings) throws GeneralSecurityException, NamingException {
 		this.settings = settings;
 		ctx = createDirContext();
+	}
+	
+	private void setUsername(String username2) {
+		this.username = username2;
+		
+		EntityManager em = emf.createEntityManager();
+		try {
+			if(username2 == null) {
+				userId = null;
+			}else {
+				Usuario u = em.createNamedQuery("Usuario.findByUsername", Usuario.class).setParameter("username", this.username).getSingleResult();
+				this.userId = u.getUid();
+			}
+		}catch(PersistenceException e) {
+			log.warn("Failed to find user in database. $username: {}. $Exception: {} -> $message: {}", e.getClass().getCanonicalName(), e.getMessage());
+			this.username = null;
+			this.userId = null;
+		}finally {
+			em.close();
+		}
 	}
 	
 	public void close() {
@@ -82,11 +102,12 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 			Usuario dbuser = em.createNamedQuery("Usuario.findByUsername", Usuario.class).setParameter("username", username).getSingleResult();
 			Usuario ldapuser = findLdapUserByUsername(username);
 			result = joinUsers(dbuser, ldapuser);
+			result = canRead(result);
 			
 		}catch(PersistenceException e) {
 			result = null;
 			log.info("User not found. $username: {}, $exeption: {} -> $message: {}", username, e.getClass().getCanonicalName(), e.getMessage());
-			log.debug("User not found. $username: {}",username, e);
+//			log.debug("User not found. $username: {}",username, e);
 		}finally {
 			em.close();
 		}
@@ -95,15 +116,69 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	
 	@Override
 	public Usuario findByEmail(String email) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		Usuario result = null;
+		Usuario ldapuser = null;
+		Usuario dbuser = null;
+		
+		String filter = String.format("(mail=%s)", email);
+		log.debug("$filter: {}", filter);
+		
+		String disabledPeopleDn = String.format("ou=people,ou=disabled,%s", settings.get("ldap.domain"));
+		String enabledPeopleDn = String.format("ou=people,%s", settings.get("ldap.domain"));
+		log.debug("$disabledPeopleDn: {}, $enabledPeopleDn: {}", disabledPeopleDn, enabledPeopleDn);
+		
+		SearchControls controls = new SearchControls();
+		controls.setReturningAttributes(new String[] {"*", "+"});
+		
+		List<Usuario> disabledUsers = searchUserFromLdap(disabledPeopleDn, filter, controls);
+		List<Usuario> enabledUsers = searchUserFromLdap(enabledPeopleDn, filter, controls);
+			
+		if(enabledUsers.size() > 1 || disabledUsers.size() > 1) {
+			log.error("There is more than one user with same email address. $email: {}", email);
+			
+		}else if(enabledUsers.size() == 0 && disabledUsers.size() == 0) {
+			log.debug("There is no user using that email. $email: {}", email); 	
+			
+		}else if(enabledUsers.size() > 1 && disabledUsers.size() > 1) {
+			log.error("There is more than one user with same email address. $email: {}", email);
+		}else if(enabledUsers.size() == 1 && disabledUsers.size() == 0) {
+			ldapuser = enabledUsers.get(0);
+			log.debug("There is one user with email. $username: {}, $mail: {}", ldapuser.getUid(), email);
+			
+		}else if(enabledUsers.size() == 0 && disabledUsers.size() == 1) {
+			ldapuser = disabledUsers.get(0);
+			log.debug("There is one user with email. $username: {}, $mail: {}", ldapuser.getUid(), email);
+			
+		}else {
+			log.error("Definetely there is no user with that email, this option is not possible to be.");
+		}
+		
+		EntityManager em = emf.createEntityManager();
+		try {
+			if(ldapuser != null) {
+				dbuser = em.find(Usuario.class, ldapuser.getUid());
+				result = joinUsers(dbuser, ldapuser);
+				result = canRead(result);
+			}
+			
+		}catch(PersistenceException e) {
+			//TODO
+			log.debug(e);
+			result = null;
+		}finally {
+			em.close();
+		}
+		
+		return result;
 	}
 
 	@Override
 	public List<Mistake> insert(Usuario user) {
 		List<Mistake> result = new ArrayList<Mistake>();
 		Validate validate = new Validate();
-		String message;
+		String message = String.format("Failed to insert new user. $user: {}", username);;
+		String username = user.getUsername();
 		result = validate.isValid(user);
 		Usuario userExists = findByUsername(user.getUsername());
 		Usuario emailExists = findByEmail(user.getEmail());
@@ -132,17 +207,21 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 			try {
 				em.getTransaction().begin();
 				em.persist(user);
-				em.getTransaction().commit();
 				log.debug("User, {}, has inserted to the database. $uid: {}", user.getUsername(), user.getUid());
 				insertToLdap(user);
+				em.getTransaction().commit();
 				log.debug("User, {}, has been inserted succesfully to db and ldap", user.getUsername());
-			}catch(Exception e) {
-				//TODO remove user from ldap to make sure database and ldap are synchronyzed
-				//TODO remove user from database, first check if user exists.
-				message = String.format("Failed to insert new user. $user: {}", user.getUsername());
-				result.add(new Mistake(500, "Interal error", message, user.getClass().getDeclaredAnnotation(HtmlForm.class).name(), message));
-				log.error("{}. $exception: {} -> $message: {}", message, e.getClass().getCanonicalName(), e.getMessage());
+			}catch(PersistenceException e) {
+				message = String.format("Fail to insert user. $username: %s, $exception: {}, $message: {}", username, e.getClass().getCanonicalName(), e.getMessage());
+				result.add(new Mistake(500, "Interal error", message, user.getClass().getName(), username));
+				log.error(message);
 				log.debug("{}.", message, e);
+			}catch(IllegalArgumentException | IllegalAccessException | NamingException | IOException e) {
+				message = String.format("Fail to insert user. $username: %s, $exception: {}, $message: {}", username, e.getClass().getCanonicalName(), e.getMessage());
+				result.add(new Mistake(500, "Interal error", message, user.getClass().getName(), username));
+				log.error(message);
+				log.debug("{}.", message, e);
+				dbRollback(em);
 			}finally {
 				em.close();
 			}
@@ -159,8 +238,40 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 
 	@Override
 	public List<Mistake> delete(Usuario user) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<Mistake> result = new ArrayList<Mistake>();
+		String username = user.getUsername();
+		
+		EntityManager em = emf.createEntityManager();
+		try {
+			if(!user.getUsername().equals(this.username)) {
+				String message = String.format("Failed to remove user. User, %s, does not have privileges to remove user, %s.", this.username, username);
+				log.warn(message);
+				result.add(new Mistake(401, "Unauthorized user", message, user.getClass().getName(), this.username));
+				
+			}else {
+				em.getTransaction().begin();
+				Usuario temp = em.find(Usuario.class, user.getUid());
+				em.remove(temp);
+				removeUserFromLdap(user);
+				em.getTransaction().commit();
+			}
+		}catch(IllegalArgumentException | PersistenceException e) {
+			String message = String.format("Failed to remove user. $username: %s. $exception: %s -> $message: %s", username, e.getClass().getCanonicalName(), e.getMessage());
+			log.error(message);
+			log.debug(message, e);
+			result.add(new Mistake(500, "Failed to remove user.", message, user.getClass().getName(), username));
+		}catch(NamingException e) {
+			String message = String.format("Failed to remove user. $username: %s. $exception: %s -> $message: %s", username, e.getClass().getCanonicalName(), e.getMessage());
+			log.error(message);
+			log.debug(message, e);
+			result.add(new Mistake(500, "Failed to remove user.", message, user.getClass().getName(), username));
+			dbRollback(em);
+		}finally {
+			em.close();
+		}
+		
+		return result;
 	}
 
 	@Override
@@ -173,6 +284,17 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	public List<Mistake> enable(Usuario user) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	private Usuario canRead(Usuario result) {
+		String username = result.getUsername();
+		if(result.getUsername().equals(this.username) || result.getFriendIds().contains(this.userId)) {
+			log.debug("User, {}, has priveleges to read user: {}", this.username, username);
+		}else {
+			log.info("User, {}, does not have priveleges to get user: {}", this.username, username);
+			result = null;
+		}
+		return result;
 	}
 	
 	private Usuario joinUsers(Usuario dbuser, Usuario ldapuser) {
@@ -195,6 +317,17 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		}
 		
 		return dbuser;
+	}
+	
+	private void dbRollback(EntityManager em) {
+		
+		try {
+			if(em.getTransaction().isActive()) {
+				em.getTransaction().rollback();
+			}
+		}catch(PersistenceException e) {
+			log.debug(e);
+		}
 	}
 
 	
@@ -252,6 +385,33 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		return result;
 	}
 	
+	private void removeUserFromLdap(Usuario user) throws NamingException {
+		
+		String dn = getLdapDn(user);
+		try {
+			ctx.destroySubcontext(dn);
+			
+		} catch (NamingException e) {
+			log.error("Failed to remove user from LDAP. $exception: {} -> $message: {}", e.getClass().getCanonicalName(), e.getMessage());
+//			log.debug("Failed to remove user from LDAP.", e);
+			throw e;
+		}
+	}
+	
+	private String getLdapDn(Usuario user) {
+		
+		String result;
+	
+		if(user.getStatus() != null && user.getStatus().equals(Status.ENABLED)) {
+			result = String.format("cn=%s,ou=people,%s", user.getUsername(), settings.get("ldap.domain"));
+		}else {
+			result = String.format("cn=%s,ou=people,ou=disabled,%s", user.getUsername(), settings.get("ldap.domain"));
+		}
+		
+		log.debug("$dn: {}", result);
+		return result;
+	}
+
 	private Attributes getUserAttributes(Usuario user) throws IllegalArgumentException , IllegalAccessException, IOException {
 		Attributes result = new BasicAttributes();
 		
@@ -340,6 +500,28 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		return result;
 	}
 
+	private List<Usuario> searchUserFromLdap(String dn, String filter, SearchControls controls) {
+		List<Usuario> result = new ArrayList<Usuario>();
+		
+		try {
+			NamingEnumeration<SearchResult> disabledPeopleResults = ctx.search(dn, filter, controls);
+			while(disabledPeopleResults.hasMore()) {
+				SearchResult sr = (SearchResult)disabledPeopleResults.next();
+				Attributes attr = sr.getAttributes();
+				
+				Usuario temp = setUserFieldsFromLdapAttributes(attr);
+				if(temp != null) {
+					result.add(temp);
+				}
+			}
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			log.debug(e);
+		}
+		
+		return result;
+	}
+	
 	private Usuario setUserFieldsFromLdapAttributes(Attributes attributes) {
 		Usuario result = new Usuario();
 		Field[] fields = result.getClass().getDeclaredFields();
@@ -389,6 +571,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	public static void main(String[] args) {
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.laetienda.user");
 		Settings settings = new Settings();
+		List<Mistake> mistakes;
 		
 		Usuario user = new Usuario();
 		user.setUsername("username");
@@ -401,10 +584,20 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		
 		try {
 			urepo = new UsuarioJndiRepoImpl(emf, settings, null);
-			urepo.insert(user);
-			Usuario find = urepo.findByUsername("username");
-			log.debug("$email: {}", find.getEmail());
-			log.debug("$status: {}", find.getStatus().toString());
+//			urepo.insert(user);
+//			mistakes = urepo.delete(user);
+			
+			urepo.removeUserFromLdap(user);
+			
+//			log.debug("Mistakes: {}", mistakes.size());
+		
+//			Usuario find1 = urepo.findByUsername("username");
+//			log.debug("User by username found. $email: {}", find1.getEmail());
+//			log.debug("User by username found. $status: {}", find1.getStatus().toString());
+//			
+//			Usuario find2 = urepo.findByEmail("email@address.com");
+//			log.debug("User by email found. $email: {}", find2.getEmail());
+//			log.debug("User by email found. $status: {}", find2.getStatus().toString());
 			
 		}catch (GeneralSecurityException | NamingException e) {
 			log.error("Failed to insert user in LDAP Directory. $exception: {} -> $message: {}", e.getClass().getCanonicalName(), e.getMessage());
