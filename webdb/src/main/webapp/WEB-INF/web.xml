@@ -9,7 +9,22 @@
 	<filter-mapping>
 		<filter-name>WebEngine</filter-name>
 		<url-pattern>/*</url-pattern>
-	</filter-mapping><!--Group Service--><filter>
+	</filter-mapping><!--GROUP API--><filter>
+		<filter-name>groupapifilter</filter-name>
+		<filter-class>com.laetienda.controller.GroupApiFilter</filter-class>
+</filter>
+	<filter-mapping>
+		<filter-name>groupapifilter</filter-name>
+		<url-pattern>/api/group</url-pattern>
+	</filter-mapping>
+	<servlet>
+		<servlet-name>groupapi</servlet-name>
+		<servlet-class>com.laetienda.webdb.controller.GroupApiController</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>groupapi</servlet-name>
+		<url-pattern>/api/group</url-pattern>
+	</servlet-mapping><!--Group Service<filter>
 		<filter-name>GroupFilter</filter-name>
 		<filter-class>com.laetienda.webdb.filter.GroupFilter</filter-class>
 </filter>
@@ -24,7 +39,7 @@
 	<servlet-mapping>
 		<servlet-name>GroupServlet</servlet-name>
 		<url-pattern>/group/*</url-pattern>
-	</servlet-mapping><!--Servlet to jump directly to jsp file-->
+	</servlet-mapping>--><!--Servlet to jump directly to jsp file
 	<servlet>
 		<description>It will jump files directly to jsp so it is not required to crate a jsp-servlet for each jsp file</description>
 		<servlet-name>Html</servlet-name>
@@ -33,7 +48,7 @@
 	<servlet-mapping>
 		<servlet-name>Html</servlet-name>
 		<url-pattern>*.html</url-pattern>
-	</servlet-mapping><!--**SECURITY CONFIGURACION**--><security-constraint>
+	</servlet-mapping>--><!--**SECURITY CONFIGURACION**--><security-constraint>
 		<web-resource-collection>
 			<web-resource-name>users</web-resource-name>
 			<url-pattern>/group.html</url-pattern>

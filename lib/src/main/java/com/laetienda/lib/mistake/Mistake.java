@@ -66,4 +66,8 @@ public class Mistake {
 	public String getValue() {
 		return getSource().getParameter();
 	}
+	
+	public String getPointer() {
+		return getSource().getPointer();
+	}
 }

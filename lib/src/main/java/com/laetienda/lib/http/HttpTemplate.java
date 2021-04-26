@@ -82,12 +82,12 @@ public class HttpTemplate implements TemplateRepository {
 		httpClient.setPostParameter("script", script);
 	}
 		
-	public String getHeader() {
+	public String getHeader() throws HttpClientException {
 		log.debug("getting header from template frontend");
 		return httpClient.post(this.url + this.uriHeader);
 	}
 	
-	public String getMenu() {
+	public String getMenu() throws HttpClientException {
 		log.debug("getting menu from template frontend");
 		return httpClient.post(this.url + this.uriMenu);
 	}
@@ -105,8 +105,16 @@ public class HttpTemplate implements TemplateRepository {
 	
 	public String getHtmlTemplate(String uri) {
 		log.debug("getting quick template. $url: {}", this.url + uri);
-		return httpClient.post(this.url + uri);
-//		return this.url + uri;
+		String result = null;
+		
+		try {
+			result = httpClient.post(this.url + uri);
+		} catch (HttpClientException e) {
+			// TODO Auto-generated catch block
+			log.debug(e);
+		}
+		
+		return result;
 	}
 	
 	public String getUrl() {
@@ -118,7 +126,7 @@ public class HttpTemplate implements TemplateRepository {
 		this.url = url;
 	}
 			
-	public static void main(String[] args) {
+	public static void main(String[] args) throws HttpClientException {
 		HttpTemplate template = new HttpTemplate();
 		template.setUrl("http://localhost:8080");
 		template.setPostParameter("clazzName", "com.laetienda.model.webdb.Group");

@@ -47,6 +47,23 @@
 	<servlet-mapping>
 		<servlet-name>HtmlController</servlet-name>
 		<url-pattern>*.html</url-pattern>
+	</servlet-mapping><!--API Controller--><servlet>
+		<servlet-name>UserApiController</servlet-name>
+		<servlet-class>com.laetienda.user.controller.UserApiController</servlet-class>
+</servlet>
+	<servlet-mapping>
+		<servlet-name>UserApiController</servlet-name>
+		<url-pattern>/api</url-pattern>
+		<url-pattern>/api/exist</url-pattern>
 	</servlet-mapping>
+	<filter>
+		<filter-name>UserApiFilter</filter-name>
+		<filter-class>com.laetienda.user.filter.UserApiFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>UserApiFilter</filter-name>
+		<url-pattern>/api</url-pattern>
+		<url-pattern>/api/exist</url-pattern>
+	</filter-mapping>
 
 </web-app>

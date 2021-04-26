@@ -2,10 +2,14 @@ package com.laetienda.webdb.repository;
 
 import com.laetienda.lib.form.HtmlForm;
 import com.laetienda.lib.form.SelectOption;
+import com.laetienda.lib.http.HttpClientException;
 import com.laetienda.lib.mistake.Mistake;
 import com.laetienda.lib.temp.User;
+import com.laetienda.model.api.ApiRepoImpl;
+import com.laetienda.model.api.ApiRepository;
 import com.laetienda.model.lib.Validate;
 import com.laetienda.model.webdb.Group;
+import com.laetienda.model.webdb.Usuario;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,24 +27,28 @@ import org.apache.logging.log4j.Logger;
 public class GroupRepoImpl implements GroupRepository {
 	final static private Logger log = LogManager.getLogger(GroupRepoImpl.class);
 	private EntityManagerFactory emf;
-	private String username;
+	private String visitorusername;
+	private Usuario visitor;
+	private ApiRepository api;
 	
 	public GroupRepoImpl() {
-		
+		api = new ApiRepoImpl();
 	}
 	
 	public GroupRepoImpl(EntityManagerFactory emf, String username) {
+		api = new ApiRepoImpl();
 		setEntityManagerFactory(emf);
 		setUser(username);
 	}
 	
 	public GroupRepoImpl(EntityManagerFactory emf) {
-		this.emf = emf;
+		setEntityManagerFactory(emf);
+		api = new ApiRepoImpl();
 	}
 	
 	public List<Group> getAllGroups(){
 		EntityManager em = emf.createEntityManager();
-		List<Group> result = em.createNamedQuery("Group.findAllAllowed", Group.class).setParameter("username", username).getResultList();
+		List<Group> result = em.createNamedQuery("Group.findAllAllowed", Group.class).setParameter("username", visitorusername).getResultList();
 		em.close();
 		return result;
 	}
@@ -50,7 +58,7 @@ public class GroupRepoImpl implements GroupRepository {
 		EntityManager em = emf.createEntityManager();
 		
 		try {			
-			result = em.createNamedQuery("Group.findByName", Group.class).setParameter("name", name).setParameter("username", username).getSingleResult();
+			result = em.createNamedQuery("Group.findByName", Group.class).setParameter("name", name).setParameter("username", visitorusername).getSingleResult();
 		}catch(IllegalStateException | PersistenceException e) {
 			log.warn("Failed to find group. $group -> {}", name);
 			log.debug("Failed to find group. $group -> {}", name, e);
@@ -81,8 +89,8 @@ public class GroupRepoImpl implements GroupRepository {
 		String groupname = null;
 		
 		try {
-			List<String> owners = findById(group.getId()).getOwners();
-			result = owners.contains(username);
+			List<Usuario> owners = findById(group.getId()).getOwners();
+			result = owners.contains(visitor);
 		}catch(Exception e) {
 			log.warn("Failed to find owner in group. $group: {} - $user: {}", groupname, username);
 			log.debug("Failed to find owner in group", e);
@@ -97,8 +105,8 @@ public class GroupRepoImpl implements GroupRepository {
 		
 		try {
 			groupname = group.getName();
-			List<String> members = findById(group.getId()).getMembers();
-			result = members.contains(username);
+			List<Usuario> members = findById(group.getId()).getMembers();
+			result = members.contains(visitor);
 		}catch(NullPointerException e) {
 			log.warn("Failed to find member in group. $group: {} - $user: {}", groupname, username);
 			log.debug("Failed to find member in group", e);
@@ -117,8 +125,8 @@ public class GroupRepoImpl implements GroupRepository {
 			name = group.getName();
 			validate.isValid(group);
 			
-			if(username == null) {
-				result.add(new Mistake(400, "Invalid User", "User must be logged.", group.getClass().getAnnotation(HtmlForm.class).name(), username));
+			if(visitorusername == null) {
+				result.add(new Mistake(400, "Invalid User", "User must be logged.", group.getClass().getAnnotation(HtmlForm.class).name(), visitorusername));
 			}else if(validate.getErrors().size() == 0) {
 				
 				if(findByName(name) == null) {
@@ -161,7 +169,7 @@ public class GroupRepoImpl implements GroupRepository {
 			name = group.getName();
 			validate.isValid(group);
 			
-			if(isOwner(group, username)) {
+			if(isOwner(group, visitorusername)) {
 				
 				if(validate.getErrors().size() == 0) {
 	//				Group g = findById(group.getId());
@@ -173,7 +181,7 @@ public class GroupRepoImpl implements GroupRepository {
 					log.debug("{} can't be update, its values has errors. $errors: {}", name, validate.getErrors().size());
 				}
 			}else {
-				String message = String.format("User, \"%s\", does not have privileges to edit group, \"%s\".", username, name);
+				String message = String.format("User, \"%s\", does not have privileges to edit group, \"%s\".", visitorusername, name);
 				log.debug(message);
 				result.add(new Mistake(401, "User unauthorized", message, group.getClass().getAnnotation(HtmlForm.class).name(), name));
 			}
@@ -197,14 +205,14 @@ public class GroupRepoImpl implements GroupRepository {
 		try {
 			name = group.getName();
 			
-			if(isOwner(group, username)) {
+			if(isOwner(group, visitorusername)) {
 				Group g = em.find(Group.class, group.getId());
 				em.getTransaction().begin();
 				em.remove(g);
 				em.getTransaction().commit();
 				log.debug("Group, {}, has removed succesfully.", name);
 			}else {
-				String message = String.format("User, \"%s\", does not have privileges to delete group, \"%s\" ", username, name);
+				String message = String.format("User, \"%s\", does not have privileges to delete group, \"%s\" ", visitorusername, name);
 				log.debug(message);
 				result.add(new Mistake(401, "User unauthorized", message, group.getClass().getAnnotation(HtmlForm.class).name(), name));
 			}
@@ -225,29 +233,43 @@ public class GroupRepoImpl implements GroupRepository {
 	}
 
 	@Override
-	public void setUser(String username) {
-		this.username = username;	
+	public void setUser(String username){
+		this.visitorusername = username;
+		
+		try {
+			this.visitor = api.getUser(username);
+		} catch (HttpClientException e) {
+			log.debug(e.getMessage(), e);
+		}
 	}
 
 	@Override
 	public void addOwner(Group group, String username) {
-		// TODO find if username exists in ldap directory
 		
-		if(group.getOwners().contains("username")) {
-			log.debug("Username has already been added to owners of the group. $group: {}, $username: {}", group.getName(), username);
-		}else {
-			group.getOwners().add(username);
-		}		
+		try {
+			Usuario usuario = api.getUser(username);
+			if(group.getOwners().contains(usuario)) {
+				log.debug("Username has already been added to owners of the group. $group: {}, $username: {}", group.getName(), username);
+			}else {
+				group.getOwners().add(usuario);
+			}	
+		}catch(HttpClientException e) {
+			log.debug(e.getMessage(), e);
+		}
 	}
 
 	@Override
 	public void addMember(Group group, String username) {
-		// TODO find if username exists in ldap directory
 		
-		if(group.getMembers().contains(username)) {
-			log.debug("Username has already been added to members of the group. $group: {}, $username: {}", group.getName(), username);
-		}else {
-			group.getMembers().add(username);
+		try {
+			Usuario usuario = api.getUser(username);
+			if(group.getMembers().contains(usuario)) {
+				log.debug("Username has already been added to members of the group. $group: {}, $username: {}", group.getName(), username);
+			}else {
+				group.getMembers().add(usuario);
+			}
+		}catch(HttpClientException e) {
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -277,8 +299,8 @@ public class GroupRepoImpl implements GroupRepository {
 		User user = new User();
 		List<SelectOption> result = user.getSelectOptions();
 		
-		for(String o : group.getOwners()) {
-			log.debug("$owner: {}", o);
+		for(Usuario u : group.getOwners()) {
+			log.debug("$owner: {}", u.getUsername());
 		}
 		
 		for(SelectOption opt : result) {
@@ -302,8 +324,8 @@ public class GroupRepoImpl implements GroupRepository {
 		user.getSelectOptions();
 		grepo.addOwner(group, "MySelf");
 		
-		for(String o : group.getOwners()) {
-			log.debug("$owner: {}", o);
+		for(Usuario u : group.getOwners()) {
+			log.debug("$owner: {}", u.getUsername());
 		}
 		
 		Map<String, List<SelectOption>> options = grepo.getOptions(group);
@@ -314,6 +336,6 @@ public class GroupRepoImpl implements GroupRepository {
 	}
 	
 	public String getUsername() {
-		return username;
+		return visitorusername;
 	}
 }

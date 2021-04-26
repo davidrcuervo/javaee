@@ -12,7 +12,8 @@ public interface FormRepository {
 	public String getName();
 	public void setMethod(FormMethod method);
 	public void setAction(FormAction action);
-	
+	public void setAction(String action);
+	public String getClassname();
 	public void setOptions(String jsonOpts);
 	public void setOptions(Map<String, List<SelectOption>> options);
 	public List<SelectOption> getOptions(String name);

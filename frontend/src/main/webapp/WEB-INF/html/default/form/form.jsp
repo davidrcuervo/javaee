@@ -3,15 +3,22 @@
     pageEncoding="UTF-8"%>
 <%@ page isELIgnored="false" %>
 
+
+<jsp:useBean id="form" class="com.laetienda.lib.form.FormRepoImpl" type="com.laetienda.lib.form.FormRepository">
+	<jsp:setProperty name="form" property="object" value="${param.classname}" />
+	<jsp:setProperty name="form" property="action" value="${param.accion }" />
+</jsp:useBean>
+
+
 <form method="${form.method}">
 
 	<c:forEach var="input" items="${form.inputs}">
 		
 		<c:if test="${input.type eq 'TEXT' || input.type eq 'TEXT' || input.type eq 'PASSWORD' || input.type eq 'DATE' || input.type eq 'EMAIL' || input.type eq 'TIME'}">
-			<c:set var="val" value="${form.getValue(input.name)}" /> 
+			<%-- <c:set var="val" value="${form.getValue(input.name)}" /> --%> 
 			<div class="form-group">
 				<label for="${input.id}">${input.label}</label>
-				<input type="${input.type}" name="${input.name}" value="${val}" class="form-control" id="${input.id}" placeholder="${input.placeholder}" />
+				<input type="${input.type}" name="${input.name}" value="${param[input.name]}" class="form-control" id="${input.id}" placeholder="${input.placeholder}" />
 			</div>
 			<c:forEach var="mistake" items="${mistakes.getMistakeByName(input.name)}">
 				<div><c:out value="${mistake.title}" /></div>
@@ -37,22 +44,15 @@
 			</c:forEach>
 		</c:if>
 
-		<%-- 
-		<c:out value="${input.type}" />
-		<c:out value="${input.name}" />
-		<c:out value="${input.label}" />
-		<c:out value="${input.id}" />
-		<c:out value="${input.order}" />
-		
-		<c:if test="${input.type eq 'TEXT' }">
-			<div>input type is TEXT</div>
-		</c:if>
-		--%>
-
 	</c:forEach>
-	<button type="submit" class="btn btn-primary">${form.action}</button>
+	<input type="hidden" name="classname" value="${form.classname }" />
+	<button type="submit" name="action" value="${form.action }" class="btn btn-primary">${form.action}</button>
 </form>
-<c:forEach var="mistake" items="${mistakes.getMistakeByName(form.name) }">
+<c:forEach var="mistake" items="${mistakes.getMistakeByName(form.classname) }">
+	<div><c:out value="${mistake.title }" /></div>
+	<div><span class="small"><c:out value="${mistake.detail }" /></span></div>
+</c:forEach>
+<c:forEach var="mistake" items="${mistakes.getMistakeByName('exception') }">
 	<div><c:out value="${mistake.title }" /></div>
 	<div><span class="small"><c:out value="${mistake.detail }" /></span></div>
 </c:forEach>

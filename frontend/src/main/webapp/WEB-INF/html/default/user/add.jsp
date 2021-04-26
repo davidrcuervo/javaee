@@ -4,9 +4,13 @@
 <%@ page isELIgnored="false" %>
 
 <c:set var="content" scope="request">
-	<h1>Thank You</h1>
-	<h3>${thkpage.title}</h3>
-	<p>${thkpage.description }</p>
+	<h1>Add New User</h1>
+	 
+	<jsp:include page="/WEB-INF/html/${settings.get('frontend.template')}/form/form.jsp">
+       	<jsp:param name="classname" value="com.laetienda.model.webdb.Usuario" />
+       	<jsp:param name="accion" value="CREATE" />
+	</jsp:include>
+	
 </c:set>
 
 <jsp:include page="/WEB-INF/jsp/template/frontendTemplate.jsp"></jsp:include>

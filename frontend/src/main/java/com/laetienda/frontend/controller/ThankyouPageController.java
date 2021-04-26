@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.laetienda.frontend.engine.Settings;
 import com.laetienda.frontend.repository.ThankyouPageRepoImpl;
 import com.laetienda.frontend.repository.ThankyouPageRepository;
+import com.laetienda.frontend.repository.ThankyouPageSessionRepoImpl;
 import com.laetienda.model.webdb.ThankyouPage;
 
 public class ThankyouPageController extends HttpServlet {
@@ -47,11 +48,13 @@ public class ThankyouPageController extends HttpServlet {
 
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		ThankyouPageRepository thkrepo = new ThankyouPageRepoImpl(dbthk);
+		ThankyouPageRepository thkrepo = new ThankyouPageSessionRepoImpl(request);
 		String url = request.getRequestURL().toString();
 		
 		log.debug("$thankyoupage: {}", request.getRequestURL());
 		if(thkrepo.isValid(url)) {
+			ThankyouPage thkpage = thkrepo.find(url);
+			request.setAttribute("thkpage", thkpage);
 			thkrepo.removeThankyouPage(url);
 			request.getRequestDispatcher("/WEB-INF/jsp/" + template + "/thankyoupage/thankyou.default.jsp").forward(request, response);
 		}else {

@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import com.laetienda.lib.tomcat.WebEngine;
 import com.laetienda.webdb.lib.Settings;
 
+@Deprecated
 public class Html extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	final static private Logger log = LogManager.getLogger(Html.class);

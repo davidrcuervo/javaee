@@ -70,17 +70,17 @@ public class Group implements Serializable, WebDb, Form {
 	@CollectionTable(name="group_owners")
 	@ValidateParameters(name="owners", nullable=false)
 	@InputForm(type = InputType.SELECT_MULTIPLE, options="groupOwnersOptions", id="groupOwnersInput", label = "Owners", name = "owners", placeholder = "Select the usernames of owners of the group")
-	private List<String> owners;
+	private List<Usuario> owners;
 	
 	@ElementCollection
 	@CollectionTable(name="group_members")
 	@ValidateParameters(name="members", nullable=false)
 	@InputForm(type = InputType.SELECT_MULTIPLE, options="groupMemberOptions", id="groupMemberInput", label="Members", name="members", placeholder = "Select the members of the group")
-	private List<String> members;
+	private List<Usuario> members;
 	
 	public Group() {
-		members = new ArrayList<String>();
-		owners = new ArrayList<String>();
+		members = new ArrayList<Usuario>();
+		owners = new ArrayList<Usuario>();
 	}
 
 	public String getName() {
@@ -121,7 +121,7 @@ public class Group implements Serializable, WebDb, Form {
 		this.id = id;
 	}
 
-	public List<String> getOwners() {
+	public List<Usuario> getOwners() {
 		return owners;
 	}
 	
@@ -137,15 +137,15 @@ public class Group implements Serializable, WebDb, Form {
 //		return result;
 //	}
 
-	public void setOwners(List<String> owners) {
+	public void setOwners(List<Usuario> owners) {
 		this.owners = owners;
 	}
 
-	public List<String> getMembers() {
+	public List<Usuario> getMembers() {
 		return members;
 	}
 
-	public void setMembers(List<String> members) {
+	public void setMembers(List<Usuario> members) {
 		this.members = members;
 	}
 

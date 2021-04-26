@@ -19,6 +19,7 @@ import com.laetienda.model.webdb.Usuario;
 import com.laetienda.user.lib.Settings;
 
 import javax.naming.Context;
+import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -27,6 +28,7 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.persistence.EntityManager;
@@ -41,7 +43,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	
 	private EntityManagerFactory emf;
 	private Settings settings;
-	private String username;
+	private String visitor;
 	private Integer userId;
 	private DirContext ctx;
 	
@@ -65,19 +67,19 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	}
 	
 	private void setUsername(String username2) {
-		this.username = username2;
+		this.visitor = username2;
 		
 		EntityManager em = emf.createEntityManager();
 		try {
 			if(username2 == null) {
 				userId = null;
 			}else {
-				Usuario u = em.createNamedQuery("Usuario.findByUsername", Usuario.class).setParameter("username", this.username).getSingleResult();
+				Usuario u = em.createNamedQuery("Usuario.findByUsername", Usuario.class).setParameter("username", this.visitor).getSingleResult();
 				this.userId = u.getUid();
 			}
 		}catch(PersistenceException e) {
-			log.warn("Failed to find user in database. $username: {}. $Exception: {} -> $message: {}", e.getClass().getCanonicalName(), e.getMessage());
-			this.username = null;
+			log.warn("Failed to find user in database. $username: {}. $Exception: {} -> $message: {}", username2, e.getClass().getCanonicalName(), e.getMessage());
+			this.visitor = null;
 			this.userId = null;
 		}finally {
 			em.close();
@@ -87,6 +89,46 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	public void close() {
 		closeDirContext(ctx);
 	}
+	
+	@Override
+	public boolean userExist(String username) {
+		Usuario user = findByUsernameNoRestriction(username);
+		boolean result = false;
+
+		if(user == null) {
+			result = false;
+		}else {
+			result = true;
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public Usuario findByUsername(String username) {
+		Usuario result = findByUsernameNoRestriction(username);
+		
+		if(result != null && canRead(result)) {
+			log.debug("User, {}, can be readen by {}", username, visitor);
+		}else {
+			result = null;
+		}
+		
+		return result;
+	}
+
+	@Override
+	public Usuario findByEmail(String email) {
+		Usuario result = findByEmailNoRestriction(email);
+		
+		if(result != null && canRead(result)) {
+			log.debug("User with email, {}, can be readen by {}.", email, visitor);
+		}else {
+			result = null;
+		}
+		
+		return result;
+	}
 
 	@Override
 	public List<Usuario> findAll() {
@@ -94,15 +136,14 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		return null;
 	}
 
-	@Override
-	public Usuario findByUsername(String username) {
+
+	private Usuario findByUsernameNoRestriction(String username) {
 		EntityManager em = emf.createEntityManager();
 		Usuario result = null;
 		try {
 			Usuario dbuser = em.createNamedQuery("Usuario.findByUsername", Usuario.class).setParameter("username", username).getSingleResult();
 			Usuario ldapuser = findLdapUserByUsername(username);
 			result = joinUsers(dbuser, ldapuser);
-			result = canRead(result);
 			
 		}catch(PersistenceException e) {
 			result = null;
@@ -114,8 +155,8 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		return result;
 	}
 	
-	@Override
-	public Usuario findByEmail(String email) {
+
+	private Usuario findByEmailNoRestriction(String email) {
 		
 		Usuario result = null;
 		Usuario ldapuser = null;
@@ -159,12 +200,11 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 			if(ldapuser != null) {
 				dbuser = em.find(Usuario.class, ldapuser.getUid());
 				result = joinUsers(dbuser, ldapuser);
-				result = canRead(result);
 			}
 			
 		}catch(PersistenceException e) {
 			//TODO
-			log.debug(e);
+			log.debug(e.getMessage(), e);
 			result = null;
 		}finally {
 			em.close();
@@ -177,16 +217,16 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	public List<Mistake> insert(Usuario user) {
 		List<Mistake> result = new ArrayList<Mistake>();
 		Validate validate = new Validate();
-		String message = String.format("Failed to insert new user. $user: {}", username);;
+		String message = String.format("Failed to insert new user. $user: {}", visitor);;
 		String username = user.getUsername();
 		result = validate.isValid(user);
-		Usuario userExists = findByUsername(user.getUsername());
-		Usuario emailExists = findByEmail(user.getEmail());
+		Usuario userExists = findByUsernameNoRestriction(user.getUsername());
+		Usuario emailExists = findByEmailNoRestriction(user.getMail());
 		
-		if(username != null) {
-			message = String.format("User, \"%s\", can't create new users", username);
+		if(!visitor.equals("tomcat")) {
+			message = String.format("User, \"%s\", can't create new users", visitor);
 			log.debug(message);
-			result.add(new Mistake(401, "Unauthorized user", message, user.getClass().getDeclaredAnnotation(HtmlForm.class).name(), username));
+			result.add(new Mistake(401, "Unauthorized user", message, user.getClass().getName(), username));
 		
 		}else if (result.size() > 0) {
 			log.debug("User has errors and can't be persisted. $NoOfErrors: {}", result.size());
@@ -197,9 +237,9 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 			result.add(new Mistake(400, "User exists", message, "username", user.getUsername()));
 			
 		}else if(emailExists != null) {
-			message = String.format("Email, \"%s\", already exists.", user.getEmail());
+			message = String.format("Email, \"%s\", already exists.", user.getMail());
 			log.debug("User can't be persisted, {}", message);
-			result.add(new Mistake(400, "eMail exists", message, "email", user.getEmail()));
+			result.add(new Mistake(400, "eMail exists", message, "email", user.getMail()));
 			
 		}else {
 			user.setStatus(Status.EMAIL_PENDING_CONFIRMATION);
@@ -235,19 +275,37 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public List<Mistake> delete(String username) {
+		
+		List<Mistake> result = new ArrayList<Mistake>();
+		
+		Usuario user = findByUsernameNoRestriction(username);
+		if(user == null) {
+			String message = String.format("User, %s, does not exist or \"%s\" does not have privileges to read user", username, visitor);
+			result.add(new Mistake(400, "Failed to remove user", message, "Username", username));
+		}else {
+			result = delete(user);
+		}
+		
+		return result;
+	}
 
 	@Override
 	public List<Mistake> delete(Usuario user) {
 		
 		List<Mistake> result = new ArrayList<Mistake>();
-		String username = user.getUsername();
+		String username = null;
 		
 		EntityManager em = emf.createEntityManager();
 		try {
-			if(!user.getUsername().equals(this.username)) {
-				String message = String.format("Failed to remove user. User, %s, does not have privileges to remove user, %s.", this.username, username);
+			username = user.getUsername();
+			
+			if(!user.getUsername().equals(this.visitor)) {
+				String message = String.format("Failed to remove user. User, %s, does not have privileges to remove user, %s.", this.visitor, username);
 				log.warn(message);
-				result.add(new Mistake(401, "Unauthorized user", message, user.getClass().getName(), this.username));
+				result.add(new Mistake(401, "Unauthorized user", message, user.getClass().getName(), this.visitor));
 				
 			}else {
 				em.getTransaction().begin();
@@ -256,7 +314,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 				removeUserFromLdap(user);
 				em.getTransaction().commit();
 			}
-		}catch(IllegalArgumentException | PersistenceException e) {
+		}catch(NullPointerException | IllegalArgumentException | PersistenceException e) {
 			String message = String.format("Failed to remove user. $username: %s. $exception: %s -> $message: %s", username, e.getClass().getCanonicalName(), e.getMessage());
 			log.error(message);
 			log.debug(message, e);
@@ -276,25 +334,97 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 
 	@Override
 	public List<Mistake> disable(Usuario user) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<Mistake> enable(Usuario user) {
-		// TODO Auto-generated method stub
-		return null;
+		String dnEnabled = this.getLdapDn(user);
+		String dnDisabled = String.format("cn=%s,ou=group,ou=disabled,%s", user.getUsername(), settings.get("ldap.domain"));
+		return changeUserStatus(user, Status.DISABLED, dnEnabled, dnDisabled);
 	}
 	
-	private Usuario canRead(Usuario result) {
-		String username = result.getUsername();
-		if(result.getUsername().equals(this.username) || result.getFriendIds().contains(this.userId)) {
-			log.debug("User, {}, has priveleges to read user: {}", this.username, username);
-		}else {
-			log.info("User, {}, does not have priveleges to get user: {}", this.username, username);
-			result = null;
+	@Override
+	public List<Mistake> enable(Usuario user) {
+		String dnDisabled = this.getLdapDn(user);
+		String dnEnabled = String.format("cn=%s,ou=people,%s", user.getUsername(), settings.get("ldap.domain"));
+		return changeUserStatus(user, Status.ENABLED, dnDisabled, dnEnabled);
+	}
+
+	private List<Mistake> changeUserStatus(Usuario user, Status status, String oldDn, String newDn) {
+		
+		List<Mistake> result = new ArrayList<Mistake>();
+		EntityManager em = emf.createEntityManager();
+		Status tempStatus = user.getStatus();
+		
+		try {
+			em.getTransaction().begin();
+			user.setStatus(status);
+			ctx.createSubcontext(newDn, this.getUserAttributes(user));
+			em.getTransaction().commit();
+			this.removeLdapDn(oldDn);
+		}catch(IllegalArgumentException | IllegalAccessException | NamingException | IOException e) {
+			String message = String.format("Failed to change status user. $dn: %s, $exception: %s -> $message: %s", oldDn, e.getClass().getCanonicalName(), e.getMessage());
+			log.error(message);
+			log.debug(message, e);
+			result.add(new Mistake(500, "Failed to change user status", message, "exception", e.getClass().getCanonicalName()));
+			user.setStatus(tempStatus);
+			dbRollback(em);
+		}catch(PersistenceException e) {
+			String message = String.format("Failed to enable user. $dn: %s, $exception: %s -> $message: %s", oldDn, e.getClass().getCanonicalName(), e.getMessage());
+			log.error(message);
+			log.debug(message, e);
+			result.add(new Mistake(500, "Failed to change user status", message, "exception", e.getClass().getCanonicalName()));
+			user.setStatus(tempStatus);
+			this.removeLdapDnNoException(newDn);
+		}finally {
+			em.close();
 		}
+		
 		return result;
+	}
+	
+
+	@Override
+	public void setTomcatToDb() {
+		Usuario ldaptomcat = findLdapUserByUsername("tomcat");
+		ldaptomcat.setStatus(Status.ENABLED);
+		EntityManager em = emf.createEntityManager();
+		
+		try{
+			em.getTransaction().begin();
+			em.persist(ldaptomcat);
+			Integer uid = ldaptomcat.getUid();
+			log.debug("tomcatid: {}", uid);
+			String tomcatdn = getLdapDn(ldaptomcat);
+			
+			List<ModificationItem> modifications = new ArrayList<ModificationItem>();
+			modifications.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uid", Integer.toString(uid))));
+			
+			ldapModifyUser(tomcatdn, modifications);
+			em.getTransaction().commit();
+			
+		}catch(PersistenceException e) {
+			//TODO String message =....
+			log.debug(e.getMessage(),e);
+		}catch(NamingException | NullPointerException e) {
+			//TODO String message =....
+			log.debug(e.getMessage(),e);
+			dbRollback(em);
+		}
+	}
+	
+	private void ldapModifyUser(String dn, List<ModificationItem> modifications) throws NamingException {
+		ctx.modifyAttributes(dn, modifications.toArray(ModificationItem[]::new));	
+	}
+
+	private boolean canRead(Usuario result) {
+		String username = result.getUsername();
+		boolean flag = false;
+		
+		if(result.getUsername().equals(this.visitor) || result.getFriendIds().contains(this.userId)) {
+			log.debug("User, {}, has priveleges to read user: {}", this.visitor, username);
+			flag = true;
+		}else {
+			log.info("User, {}, does not have priveleges to get user: {}", this.visitor, username);
+			flag = false;
+		}
+		return flag;
 	}
 	
 	private Usuario joinUsers(Usuario dbuser, Usuario ldapuser) {
@@ -311,9 +441,9 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 			log.error("dbusername is different from ldapusername. $dbusername: {}, $ldapusername: {}", dbuser.getUsername(), ldapuser.getUsername());
 			dbuser = null;
 		}else {
-			dbuser.setEmail(ldapuser.getEmail());
-			dbuser.setFirstName(ldapuser.getFirstName());
-			dbuser.setLastName(ldapuser.getLastName());
+			dbuser.setMail(ldapuser.getMail());
+			dbuser.setGivenname(ldapuser.getGivenname());
+			dbuser.setSurname(ldapuser.getSurname());
 		}
 		
 		return dbuser;
@@ -388,14 +518,27 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	private void removeUserFromLdap(Usuario user) throws NamingException {
 		
 		String dn = getLdapDn(user);
+		removeLdapDn(dn);
+	}
+	
+	private void removeLdapDn(String dn) throws NamingException {
+		
 		try {
 			ctx.destroySubcontext(dn);
-			
 		} catch (NamingException e) {
-			log.error("Failed to remove user from LDAP. $exception: {} -> $message: {}", e.getClass().getCanonicalName(), e.getMessage());
-//			log.debug("Failed to remove user from LDAP.", e);
+			String message = String.format("Failed to remove entry from LDAP. $dn: %s. $exception: %s -> $message: %s", dn, e.getClass().getCanonicalName(), e.getMessage());
+			log.error(message);
 			throw e;
 		}
+	}
+	
+	private void removeLdapDnNoException(String dn) {
+		
+		try {
+			removeLdapDn(dn);
+		} catch (NamingException e) {
+			log.debug(e.getMessage(), e);
+		}		
 	}
 	
 	private String getLdapDn(Usuario user) {
@@ -425,6 +568,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 				Annotation annotation = field.getAnnotation(LdapAttribute.class);
 				
 				if(annotation instanceof LdapAttribute) {
+					boolean accessible = field.canAccess(user);
 					field.setAccessible(true);
 					LdapAttribute ldapAttr = (LdapAttribute)annotation;
 					Attribute attr = new BasicAttribute(ldapAttr.attribute());
@@ -446,6 +590,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 					log.debug("Attribute found. $attribute: {} -> $value: {}", ldapAttr.attribute(), value);
 					attr.add(value);
 					result.put(attr);
+					field.setAccessible(accessible);
 				}
 			}
 		}catch(IllegalArgumentException | IllegalAccessException e) {
@@ -468,7 +613,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		Attributes attributes2 = getAttributesFromDn(disabledUserDn);
 					
 		if(attributes1 == null && attributes2 == null) {
-			log.debug("User, {}, does not exist in ldap directory", username);
+			log.debug("User, {}, does not exist in ldap directory", visitor);
 		}else if(attributes1 != null && attributes2 != null) {
 			log.fatal("User, {}, exists in enabled group and disabled group");
 		
@@ -481,7 +626,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 			result = setUserFieldsFromLdapAttributes(attributes2);
 		
 		}else {
-			log.fatal("Does not make sense to not fall in any of options before. $username: {}", username);
+			log.fatal("Does not make sense to not fall in any of options before. $username: {}", visitor);
 		}			
 		
 		return result;
@@ -575,9 +720,9 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		
 		Usuario user = new Usuario();
 		user.setUsername("username");
-		user.setEmail("email@address.com");
-		user.setFirstName("fname");
-		user.setLastName("lname");
+		user.setMail("email@address.com");
+		user.setGivenname("fname");
+		user.setSurname("lname");
 		user.setPassword("www.myself.com");
 		
 		UsuarioJndiRepoImpl urepo = null; 

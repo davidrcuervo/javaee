@@ -10,6 +10,10 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.laetienda.lib.form.Form;
+import com.laetienda.lib.form.HtmlForm;
+import com.laetienda.lib.form.InputForm;
+import com.laetienda.lib.form.InputType;
 import com.laetienda.lib.usuario.Ldap;
 import com.laetienda.lib.usuario.LdapAttribute;
 import com.laetienda.lib.usuario.Status;
@@ -29,7 +33,8 @@ import com.laetienda.model.lib.ValidateParameters;
 	@NamedQuery(name="Usuario.findAllInReaders", query="SELECT u FROM Usuario u JOIN u.friends r WHERE r = :uid")
 	
 })
-public class Usuario implements Serializable {
+@HtmlForm(name = "Usuario")
+public class Usuario implements Serializable, Form {
 	private static final long serialVersionUID = 1L;
 	final private static Logger log = LogManager.getLogger(Usuario.class);
 
@@ -46,26 +51,31 @@ public class Usuario implements Serializable {
 	@Column(name="\"username\"", nullable=false, unique=true)
 	@LdapAttribute(attribute="cn")
 	@ValidateParameters(name="username", nullable=false, minlenght=5, maxlenght=100, regex = "[a-zA-Z0-9]+")
+	@InputForm(id = "usernameInput", label = "Username", name = "username", placeholder = "Please insert your username")
 	private String username;
 
 	@Transient
 	@LdapAttribute(attribute="givenname")
-	@ValidateParameters(name="First_Name", nullable=false, regex = "[a-zA-Z\\s]+")
+	@ValidateParameters(name="name", nullable=false, regex = "[a-zA-Z\\s]+")
+	@InputForm(id = "fNameInput", label = "First Name", name = "name", placeholder = "Please insert your First Name")
 	private String givenname;
 	
 	@Transient
 	@LdapAttribute(attribute="sn")
-	@ValidateParameters(name="Last_Name", nullable=false, regex = "[a-zA-Z\\s]+")
+	@ValidateParameters(name="surname", nullable=false, regex = "[a-zA-Z\\s]+")
+	@InputForm(id = "lNameInput", label = "Last Name", name = "surname", placeholder = "Please insert your Last Name")
 	private String surname;
 	
 	@Transient
 	@LdapAttribute(attribute="mail")
 	@ValidateParameters(name="email", nullable=false, regex = "^[A-Za-z0-9+_.-]+@(.+)$")
-	private String mail;
+	@InputForm(id = "mailInput", label = "eMail address", name = "email", placeholder = "Please insert your email address")
+	private String email;
 	
 	@Transient
 	@LdapAttribute(attribute="userPassword")
 	@ValidateParameters(name="password", nullable=false, minlenght=6, maxlenght=100)
+	@InputForm(id = "passwordInput", type=InputType.PASSWORD, label = "Password", name = "password", placeholder = "Please insert your password")
 	private String password;
 	
 	@ElementCollection
@@ -82,9 +92,9 @@ public class Usuario implements Serializable {
 	public Usuario(String username, String givenname, String surname, String mail, String password) {
 		super();
 		setUsername(username);
-		setFirstName(givenname);
-		setLastName(surname);
-		setEmail(mail);
+		setGivenname(givenname);
+		setSurname(surname);
+		setMail(mail);
 		setPassword(password);
 	}
 
@@ -106,28 +116,28 @@ public class Usuario implements Serializable {
 		this.username = username;
 	}
 
-	public String getFirstName() {
+	public String getGivenname() {
 		return givenname;
 	}
 
-	public void setFirstName(String firstName) {
+	public void setGivenname(String firstName) {
 		this.givenname = firstName;
 	}
 
-	public String getLastName() {
+	public String getSurname() {
 		return surname;
 	}
 
-	public void setLastName(String lastName) {
+	public void setSurname(String lastName) {
 		this.surname = lastName;
 	}
 
-	public String getEmail() {
-		return mail;
+	public String getMail() {
+		return email;
 	}
 
-	public void setEmail(String email) {
-		this.mail = email;
+	public void setMail(String email) {
+		this.email = email;
 	}
 
 	public void setPassword(String password) {

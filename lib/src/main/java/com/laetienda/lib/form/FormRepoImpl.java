@@ -1,6 +1,7 @@
 package com.laetienda.lib.form;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -24,9 +25,16 @@ public class FormRepoImpl implements FormRepository {
 	private Map<String, List<SelectOption>> options;
 	private Form rowdata;
 	private String name;
+	
+	public FormRepoImpl() {
+		
+	}
 
 	public FormRepoImpl(Object entity) {
-		
+		setObject(entity);
+	}
+
+	public void setObject(Object entity) {
 		if(entity instanceof Form) {
 			rowdata = (Form)entity;
 		}
@@ -43,7 +51,20 @@ public class FormRepoImpl implements FormRepository {
 			loadInputs(entity);
 		}
 	}
-
+	
+	public void setObject(String classname) {
+		log.debug("$classname: {}", classname);
+		try {
+			Class<?> clazz = Class.forName(classname);
+			Constructor<?> ctor = clazz.getConstructor();
+			Object entity = ctor.newInstance(new Object[] {});
+			setObject(entity);
+			
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			log.debug(e.getMessage(), e);
+		}
+	}
+	
 	private void loadInputs(Object o) {
 		
 		try {
@@ -100,6 +121,11 @@ public class FormRepoImpl implements FormRepository {
 	public FormAction getAction() {
 		return action;
 	}
+	
+	@Override
+	public String getClassname() {
+		return rowdata.getClass().getCanonicalName();
+	}
 
 	@Override
 	public String getButton() {
@@ -114,6 +140,19 @@ public class FormRepoImpl implements FormRepository {
 	@Override
 	public void setAction(FormAction action) {
 		this.action = action;
+	}
+	
+	@Override
+	public void setAction(String action) {
+		
+		FormAction faction = FormAction.CREATE;
+		try {
+			faction  = FormAction.valueOf(action);
+		}catch(IllegalArgumentException e) {
+			log.debug(e.getMessage(), e);
+		}finally {
+			setAction(faction);
+		}
 	}
 	
 	@Override

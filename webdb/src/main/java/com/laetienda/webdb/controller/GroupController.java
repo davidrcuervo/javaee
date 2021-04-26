@@ -17,15 +17,18 @@ import com.google.gson.Gson;
 import com.laetienda.lib.form.FormAction;
 import com.laetienda.lib.form.HtmlForm;
 import com.laetienda.lib.http.ClientRepository;
+import com.laetienda.lib.http.HttpClientException;
 import com.laetienda.lib.http.HttpQuickClient;
 import com.laetienda.lib.http.TemplateRepository;
 import com.laetienda.lib.mistake.Mistake;
 import com.laetienda.lib.mistake.MistakeRepoImpl;
 import com.laetienda.model.webdb.Group;
 import com.laetienda.model.webdb.ThankyouPage;
+import com.laetienda.model.webdb.Usuario;
 import com.laetienda.webdb.lib.Settings;
 import com.laetienda.webdb.repository.GroupRepository;
 
+@Deprecated
 public class GroupController extends HttpServlet {
 	private static final Logger log = LogManager.getLogger(GroupController.class);
 	private static final long serialVersionUID = 1L;
@@ -110,14 +113,18 @@ public class GroupController extends HttpServlet {
 		
 		httpClient.setPostParameter("thkpagejson", gson.toJson(thkpage));
 
-		String resultjson = httpClient.post(tempurl);
-		String result = gson.fromJson(resultjson, String.class);
-		log.debug("$resultjson: {}, $result: {}", resultjson, result);
-		
-		if(result != null && !result.isBlank() && result.equals("OK")) {
-			log.debug("Thankyou token posted succesfully");
-		}else {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);			
+		try {
+			String resultjson = httpClient.post(tempurl);
+			String result = gson.fromJson(resultjson, String.class);
+			log.debug("$resultjson: {}, $result: {}", resultjson, result);
+			
+			if(result != null && !result.isBlank() && result.equals("OK")) {
+				log.debug("Thankyou token posted succesfully");
+			}else {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);			
+			}
+		}catch(HttpClientException e) {
+			log.debug(e);
 		}
 	}
 
@@ -142,7 +149,7 @@ public class GroupController extends HttpServlet {
 			}
 		}
 		
-		for(String m : group.getMembers()) {
+		for(Usuario m : group.getMembers()) {
 			log.debug("$member: {}", m);
 		}
 	}
