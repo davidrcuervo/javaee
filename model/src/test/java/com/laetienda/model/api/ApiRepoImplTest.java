@@ -21,7 +21,7 @@ class ApiRepoImplTest {
 	@Test
 	void testUser() {
 		
-		ApiRepository arepo = new ApiRepoImpl("tomcat", new Settings());
+		UserApi arepo = new UserApi("tomcat", new Settings());
 		ThankyouPage result;
 		
 		try {

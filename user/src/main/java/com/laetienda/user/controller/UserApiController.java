@@ -72,6 +72,18 @@ public class UserApiController extends HttpServlet {
 		}else if(path.equals("/api/exist")) {
 			doGetBoolean(request, response);
 			
+		}else if(path.equals("/api/friends")) {
+			List<Usuario> friends = urepo.findFriends();
+			result = gson.toJson(friends);
+			out.print(result);
+			out.flush();
+			
+		}else if(path.equals("/api/all")) {
+			List<Usuario> users = urepo.findAll();
+			result = gson.toJson(users);
+			out.print(result);
+			out.flush();
+			
 		}
 	}
 	

@@ -60,7 +60,7 @@ public class Settings {
 		p.put("template", "default");
 		p.put("frontend.template.url", "http://localhost:8080/template/default");
 		p.put("usuario.url", "http://localhost:8080/user");
-		p.put("group.url", "http://localhost:8080/webdb");
+		p.put("webdb.url", "http://localhost:8080/webdb");
 
 		return p;
 	}

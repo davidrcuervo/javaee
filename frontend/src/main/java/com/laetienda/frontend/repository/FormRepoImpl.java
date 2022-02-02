@@ -1,4 +1,4 @@
-package com.laetienda.lib.form;
+package com.laetienda.frontend.repository;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -14,6 +14,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
+import com.laetienda.lib.form.Form;
+import com.laetienda.lib.form.FormAction;
+import com.laetienda.lib.form.FormMethod;
+import com.laetienda.lib.form.HtmlForm;
+import com.laetienda.lib.form.InputForm;
+import com.laetienda.lib.form.InputRepoImpl;
+import com.laetienda.lib.form.InputRepository;
+import com.laetienda.lib.form.SelectOption;
 
 public class FormRepoImpl implements FormRepository {
 	final static private Logger log = LogManager.getLogger(FormRepoImpl.class);
@@ -177,5 +185,56 @@ public class FormRepoImpl implements FormRepository {
 	@Override
 	public String getName() {
 		return this.name;
+	}
+	
+	static public void main(String[] args) {
+		String apiword = "com.laetienda.model.api.WebdbApi.getGroupFormOwnerOptions(name)";
+		String rowword = "com.laetienda.model.webdb.Group";
+		log.debug("$word: {}", apiword);
+		
+		int open = apiword.indexOf('(');
+		int close = apiword.indexOf(')');
+		int mbegin = apiword.lastIndexOf('.');
+		
+		String classname = apiword.substring(0,mbegin);
+		log.debug("$clazz: {}", classname);
+		
+		String methodname = apiword.substring(mbegin + 1, open);
+		log.debug("$metodo: {}", methodname);
+		
+		String variable = apiword.substring(open + 1, close);
+		log.debug("$variable: {}", variable);
+		
+		try {
+			Class<?> rowclazz = Class.forName(rowword);
+			Constructor<?> rowconstructor = rowclazz.getConstructor(new Class[] {});
+			Object rowobject = rowconstructor.newInstance();
+			Field field = rowclazz.getDeclaredField(variable);
+			boolean accessible = field.canAccess(rowobject);
+			field.setAccessible(true);
+			
+			Class<?> apiclazz = Class.forName(classname);
+			Method apimethod = apiclazz.getDeclaredMethod(methodname, field.getType());
+			Constructor<?> apiconstructor = apiclazz.getConstructor(new Class[] {});
+			Object apiobject = apiconstructor.newInstance();
+			log.debug("$field.value: {}", field.get(rowobject));
+			log.debug("$apimethod.name: {}", apimethod.getName());
+			
+			Object apiresult = apimethod.invoke(apiobject, field.get(rowobject));
+			field.setAccessible(accessible);
+			
+			if(apiresult instanceof List<?>) {
+				if(((List<?>) apiresult).get(0) instanceof SelectOption) {
+					List<SelectOption> opts = (List<SelectOption>)apiresult;
+					
+					for(SelectOption opt : opts) {
+						log.debug("$label: {} -> $value: {}", opt.getLabel(), opt.getValue());
+					}
+				}
+			}
+			
+		} catch (ClassNotFoundException | NoSuchFieldException | SecurityException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			log.debug(e.getMessage(), e);
+		}
 	}
 }

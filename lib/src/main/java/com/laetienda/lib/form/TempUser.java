@@ -1,18 +1,15 @@
-package com.laetienda.lib.temp;
+package com.laetienda.lib.form;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.laetienda.lib.form.SelectOption;
-import com.laetienda.lib.form.SelectOptionImpl;
-import com.laetienda.lib.form.SelectOptionsGet;
-
-public class User implements SelectOptionsGet  {
+@Deprecated
+public class TempUser implements SelectOptionsGet  {
 	
 	final static private List<String> usernames = Arrays.asList("myself", "admin.brdc", "admin.sesm", "tomcat"); 
 
-	public User() {
+	public TempUser() {
 		
 	}
 	

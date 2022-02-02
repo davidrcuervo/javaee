@@ -30,9 +30,9 @@ import com.laetienda.model.lib.ValidateParameters;
 	@NamedQuery(name="Usuario.findall", query="SELECT u FROM Usuario u"),
 	@NamedQuery(name="Usuario.findByUid", query="SELECT u FROM Usuario u WHERE u.uid = :uid"),
 	@NamedQuery(name="Usuario.findByUsername", query="SELECT u FROM Usuario u WHERE u.username = :username"),
-	@NamedQuery(name="Usuario.findAllInReaders", query="SELECT u FROM Usuario u JOIN u.friends r WHERE r = :uid")
-	
+	@NamedQuery(name="Usuario.findAllInReaders", query="SELECT u FROM Usuario u JOIN u.friends r WHERE r = :uid"),
 })
+
 @HtmlForm(name = "Usuario")
 public class Usuario implements Serializable, Form {
 	private static final long serialVersionUID = 1L;
@@ -78,10 +78,9 @@ public class Usuario implements Serializable, Form {
 	@InputForm(id = "passwordInput", type=InputType.PASSWORD, label = "Password", name = "password", placeholder = "Please insert your password")
 	private String password;
 	
-	@ElementCollection
-	@CollectionTable(name="usuario_friends")
+	@OneToMany(cascade=CascadeType.ALL)
 	@ValidateParameters(name="friends", nullable=true)
-	private List<Integer> friends = new ArrayList<Integer>();
+	private List<Usuario> friends = new ArrayList<Usuario>();
 	
 	public Usuario() {
 		super();
@@ -149,14 +148,14 @@ public class Usuario implements Serializable, Form {
 	}   
 	
 	public void addFriend(Usuario user) {
-		if(user == null || friends.contains(user.getUid())) {
+		if(user == null || friends.contains(user)) {
 			log.debug("User, \"{}\", is already friend of {}", user.getUsername(), this.getUsername());
 		}else {
-			friends.add(user.getUid());
+			friends.add(user);
 		}
 	}
 	
-	public List<Integer> getFriendIds(){
+	public List<Usuario> getFriends(){
 		return this.friends;
 	}
 }

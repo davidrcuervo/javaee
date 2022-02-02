@@ -26,4 +26,6 @@ public interface GroupRepository {
 	public void addMember(Group group, String username);
 //	public List<SelectOption> getOptions(String options, Group group);
 	public Map<String, List<SelectOption>> getOptions(Group group);
+	public List<SelectOption> getOwnerOptions(String groupname);
+	public List<SelectOption> getMemberOptions(String groupname);
 }

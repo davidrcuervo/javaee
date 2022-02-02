@@ -1,12 +1,8 @@
 package com.laetienda.model.api;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,177 +12,102 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.laetienda.lib.http.ClientRepository;
 import com.laetienda.lib.http.HttpClientException;
 import com.laetienda.lib.http.HttpQuickClient;
-import com.laetienda.lib.mistake.Mistake;
 import com.laetienda.model.lib.Settings;
-import com.laetienda.model.webdb.Group;
-import com.laetienda.model.webdb.ThankyouPage;
-import com.laetienda.model.webdb.Usuario;
 
 public class ApiRepoImpl implements ApiRepository {
 	final static private Logger log = LogManager.getLogger(ApiRepoImpl.class);
 
-//	public Map<String, String> urls;
-	public List<Mistake> mistakes;
-	public Gson gson;
-	public String visitor;
-	public Settings settings;
+	private String visitor;
+	private Gson gson;
+	private Settings settings;
 	
 	public ApiRepoImpl() {
-//		urls = new HashMap<String, String>();
 		gson = new Gson();
 		setSettings(new Settings());
 	}
 	
+	public ApiRepoImpl(String visitor) {
+		gson = new Gson();
+		setVisitor(visitor);
+		setSettings(new Settings());
+	}
+	
 	public ApiRepoImpl(String visitor, Settings settings) {
-//		urls = new HashMap<String, String>();
 		gson = new Gson();
 		setVisitor(visitor);
 		setSettings(settings);
 	}
 	
-	@Override
-	@ApiAnnotation(method=HttpMethod.GET, path="{usuario.url}/api/exist")
-	public boolean userExist(String username) throws HttpClientException {
-		
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("username", username);
-		params.put("visitor", visitor);
-		
-		return (boolean)get(params, username.getClass());
+	public ApiRepoImpl setSettings(Settings settings) {
+		this.settings = settings;
+		return this;
 	}
 
 	@Override
-	@ApiAnnotation(method=HttpMethod.GET, path="{usuario.url}/api")
-	public Usuario getUser(Integer uid) throws HttpClientException {
-		
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("uid", Integer.toString(uid));
-		params.put("visitor", visitor);
-
-		return (Usuario)get(params, uid.getClass());
-	}
-
-	@Override
-	@ApiAnnotation(method = HttpMethod.GET, path = "{usuario.url}/api")
-	public Usuario getUser(String username) throws HttpClientException {
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("username", username);
-		params.put("visitor", visitor);
-				
-		return (Usuario)get(params, username.getClass());
-	}
-
-	@Override
-	@ApiAnnotation(method = HttpMethod.GET, path = "{usuario.url}/api")
-	public Usuario getUserFromEmail(String email) throws HttpClientException {
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("email", email);
-		params.put("visitor", visitor);
-		
-		return (Usuario)get(params, email.getClass());
-	}
-	
-	@Override
-	@ApiAnnotation(method=HttpMethod.POST, path = "{usuario.url}/api")
-	public ThankyouPage insert(Usuario user) throws HttpClientException{
-		
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("visitor", visitor);
-		params.put("usuario", gson.toJson(user));
-		
-		return (ThankyouPage)this.get(params, user.getClass());
-	}
-	
-	@Override
-	@ApiAnnotation(method=HttpMethod.PUT, path="{usuario.url}/api") 
-	public ThankyouPage edit(Usuario user) throws HttpClientException {
-		
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("visitor", visitor);
-		params.put("usuario", gson.toJson(user));
-		
-		return (ThankyouPage)get(params, user.getClass());
-	}
-	
-	@Override
-	@ApiAnnotation(method=HttpMethod.DELETE, path="{usuario.url}/api")
-	public ThankyouPage delete(Usuario user) throws HttpClientException{
-		
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("visitor", visitor);
-		params.put("username", user.getUsername());
-		
-		return (ThankyouPage)get(params, user.getClass());
-	}
-
-	@Override
-	public Group getGroup(Integer gid) throws HttpClientException {
-		
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("visitor", visitor);
-		params.put("gid", Integer.toString(gid));
-		
-		return (Group)get(params, gid.getClass());
-	}
-
-	@Override
-	public Group getGroup(String gname) throws HttpClientException {
-
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("visitor", visitor);
-		params.put("groupname", gname);
-		return (Group)get(params, gname.getClass());
-	}
-
-	@Override
-	public ThankyouPage insert(Group group) throws HttpClientException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ThankyouPage delete(Group group) throws HttpClientException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ThankyouPage update(Group group) throws HttpClientException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-//	@Override
-//	public void setUrl(String clazzName, String url) {
-//		String temp = urls.get(clazzName);
-//		
-//		if(temp != null && temp.equals(url)) {
-//			//DO nothing
-//		}else {
-//			urls.put(clazzName, url);
-//		}
-//		
-//	}
-	
 	public String getVisitor() {
 		return visitor;
 	}
 
+	@Override
 	public void setVisitor(String visitor) {
 		this.visitor = visitor;
 	}
-
-	public void setSettings(Settings settings) {
-		this.settings = settings;
-//		this.urls.put(Usuario.class.getCanonicalName(), settings.get("usuario.url"));
-//		this.urls.put(Group.class.getCanonicalName(), settings.get("group.url"));
+	
+	@Override
+	public Object call(Map<String, String> params, Class<?> type, HttpMethod httpMethod, URL url) throws HttpClientException {
+		Object result = null;
+		String httpresponse = null;
+		ClientRepository http = new HttpQuickClient();
+		params.put("visitor", this.visitor);
+		
+		try {
+			
+			if(httpMethod.equals(HttpMethod.GET)) {
+				params.forEach((key, value)->{
+					http.setGetParameter(key, value);
+				});
+				
+				httpresponse = http.get(url.toString());
+				
+			}else if(httpMethod.equals(HttpMethod.POST)) {
+				params.forEach((key, value)->{
+					http.setPostParameter(key, value);
+				});
+				
+				httpresponse = http.post(url.toString());
+				
+			}else if(httpMethod.equals(HttpMethod.PUT)) {
+				params.forEach((key, value)->{
+					http.setPostParameter(key, value);
+				});
+				
+				httpresponse = http.put(url.toString());
+				
+			}else if(httpMethod.equals(HttpMethod.DELETE)) {
+				params.forEach((key, value)->{
+					http.setGetParameter(key, value);
+				});
+				
+				httpresponse = http.delete(url.toString());
+				
+			}else {
+				log.error("Http method not supported. $HttpMethod: {}", httpMethod);
+			}
+			
+			result = gson.fromJson(httpresponse, type);
+		}catch(JsonSyntaxException e) {
+			
+		}
+		return result;
 	}
 
-	private Object get(Map<String, String> params, /*Class<?> clazz,*/ Class<?>... paramTypes) throws HttpClientException {
-		String httpresponse = null;
+	@Override
+	public Object call(Map<String, String> params, Class<?>... paramTypes) throws HttpClientException {
+		
 		Object result = null;
 		
 		String mname = Thread.currentThread().getStackTrace()[2].getMethodName();
@@ -195,48 +116,14 @@ public class ApiRepoImpl implements ApiRepository {
 			Method mth = this.getClass().getDeclaredMethod(mname, paramTypes);
 			ApiAnnotation aa = (ApiAnnotation) mth.getDeclaredAnnotation(ApiAnnotation.class);
 			HttpMethod httpm = aa.method();
-//			String url = String.format(urls.get(clazz.getCanonicalName()) + aa.path());
 			String url = findUrl(aa.path());
 			log.debug("$apiurl: {}", url);
 			
-			ClientRepository http = new HttpQuickClient();
+			result = call(params, mth.getReturnType(), httpm, new URL(url));
 			
-			if(httpm.equals(HttpMethod.GET)) {
-				params.forEach((key, value)->{
-					http.setGetParameter(key, value);
-				});
-				
-				httpresponse = http.get(url);
-				
-			}else if(httpm.equals(HttpMethod.POST)) {
-				params.forEach((key, value)->{
-					http.setPostParameter(key, value);
-				});
-				
-				httpresponse = http.post(url);
-				
-			}else if(httpm.equals(HttpMethod.PUT)) {
-				params.forEach((key, value)->{
-					http.setPostParameter(key, value);
-				});
-				
-				httpresponse = http.put(url);
-				
-			}else if(httpm.equals(HttpMethod.DELETE)) {
-				params.forEach((key, value)->{
-					http.setGetParameter(key, value);
-				});
-				
-				httpresponse = http.delete(url);
-				
-			}else {
-				log.error("Http method not supported. $HttpMethod: {}", httpm);
-			}
-			
-			result = gson.fromJson(httpresponse, mth.getReturnType());
-		}catch (NoSuchMethodException | SecurityException e) {
+		}catch (NoSuchMethodException | SecurityException | MalformedURLException e) {
 			//TODO
-			log.debug(e);
+			log.debug(e.getMessage(), e);
 			result = null;
 		}catch(NullPointerException e) {
 			log.debug(e);
@@ -285,21 +172,8 @@ public class ApiRepoImpl implements ApiRepository {
 		return result;
 	}
 
+
 	public static void main(String[] args) {
-		ApiRepository arepo = new ApiRepoImpl("tomcat", new Settings());
-		Usuario user = new Usuario("", "", "", "", "");
-		
-		ThankyouPage result;
-		
-		try {
-			result = arepo.insert(user);
-			log.debug("$result: {}", result.getDescription());
-			
-		} catch (HttpClientException e) {
-			for(Mistake m : e.getMistakes()) {
-				log.debug("$code: {}, $title: {}, $detail: {}, $pointer: {}, $source: {}", m.getStatus(), m.getTitle(), m.getDetail(), m.getPointer(), m.getValue());
-			}
-		}
 		
 	}
 }

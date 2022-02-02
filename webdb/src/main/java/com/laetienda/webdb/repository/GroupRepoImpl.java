@@ -2,11 +2,11 @@ package com.laetienda.webdb.repository;
 
 import com.laetienda.lib.form.HtmlForm;
 import com.laetienda.lib.form.SelectOption;
+import com.laetienda.lib.form.SelectOptionImpl;
+import com.laetienda.lib.form.TempUser;
 import com.laetienda.lib.http.HttpClientException;
 import com.laetienda.lib.mistake.Mistake;
-import com.laetienda.lib.temp.User;
-import com.laetienda.model.api.ApiRepoImpl;
-import com.laetienda.model.api.ApiRepository;
+import com.laetienda.model.api.UserApi;
 import com.laetienda.model.lib.Validate;
 import com.laetienda.model.webdb.Group;
 import com.laetienda.model.webdb.Usuario;
@@ -29,21 +29,21 @@ public class GroupRepoImpl implements GroupRepository {
 	private EntityManagerFactory emf;
 	private String visitorusername;
 	private Usuario visitor;
-	private ApiRepository api;
+	private UserApi api;
 	
 	public GroupRepoImpl() {
-		api = new ApiRepoImpl();
+		api = new UserApi();
 	}
 	
 	public GroupRepoImpl(EntityManagerFactory emf, String username) {
-		api = new ApiRepoImpl();
+		api = new UserApi();
 		setEntityManagerFactory(emf);
 		setUser(username);
 	}
 	
 	public GroupRepoImpl(EntityManagerFactory emf) {
 		setEntityManagerFactory(emf);
-		api = new ApiRepoImpl();
+		api = new UserApi();
 	}
 	
 	public List<Group> getAllGroups(){
@@ -277,13 +277,28 @@ public class GroupRepoImpl implements GroupRepository {
 	public Map<String, List<SelectOption>> getOptions(Group group){
 		
 		Map<String, List<SelectOption>> result = new HashMap<String, List<SelectOption>>();
-		result.put("groupOwnersOptions", getGroupOwnerOptions(group));
-		result.put("groupMemberOptions", getGroupMemberOptions(group));
+		result.put("groupOwnersOptions", getOptions(group, "owners"));
+		result.put("groupMemberOptions", getOptions(group, "members"));
 		return result;
  	}
 	
+	@Override
+	public List<SelectOption> getOwnerOptions(String groupname) {
+		Group group = findByName(groupname);
+		
+		return getOptions(group, "owners");
+	}
+	
+	@Override
+	public List<SelectOption> getMemberOptions(String groupname) {
+		Group group = findByName(groupname);
+		
+		return getOptions(group, "members");
+	}
+	
+	
 	private List<SelectOption> getGroupMemberOptions(Group group) {
-		User user = new User();
+		TempUser user = new TempUser();
 		List<SelectOption> result = user.getSelectOptions();
 		
 		for(SelectOption opt : result) {
@@ -294,9 +309,46 @@ public class GroupRepoImpl implements GroupRepository {
 		
 		return result;
 	}
+	
+	private List<SelectOption> getOptions(Group group, String token){
+		List<SelectOption> result = new ArrayList<SelectOption>();
+		
+		try {
+			List<Usuario> friends = api.getFriends(visitorusername);
+			String ownerLabel = String.format("%s %s", visitor.getGivenname(), visitor.getSurname());
+			
+			if(token.equals("owners") && !group.getOwners().contains(visitor)) {
+				result.add(new SelectOptionImpl(visitor.getUsername(), ownerLabel, false, false));
+				
+			}else if(token.equals("members") && !group.getMembers().contains(visitor)) {
+				result.add(new SelectOptionImpl(visitor.getUsername(), ownerLabel, false, false));
+				
+			}
+			
+			for(Usuario friend : friends) {
+				String label = String.format("%s %s", friend.getGivenname(), friend.getSurname());
+				
+				if(token.equals("owners") && group.getOwners().contains(friend)) {
+					result.add(new SelectOptionImpl(friend.getUsername(), label, true, false));
+				
+				}else if(token.equals("members") && group.getMembers().contains(friend)) {
+					result.add(new SelectOptionImpl(friend.getUsername(), label, true, false));
+					
+				}else {
+					result.add(new SelectOptionImpl(friend.getUsername(), label, false, false));
+				}
+			}
+			
+		} catch (HttpClientException e) {
+			log.debug(e.getMessage(), e);
+		}
+		
+		return result;
+	}
 
-	private List<SelectOption> getGroupOwnerOptions(Group group) {
-		User user = new User();
+	@Deprecated
+	private List<SelectOption> getGroupOwnerOptionsDeprecated(Group group) {
+		TempUser user = new TempUser();
 		List<SelectOption> result = user.getSelectOptions();
 		
 		for(Usuario u : group.getOwners()) {
@@ -317,7 +369,7 @@ public class GroupRepoImpl implements GroupRepository {
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.laetienda.webdb");
 		GroupRepository grepo = new GroupRepoImpl(emf);
 		Group group = new Group();
-		User user = new User();
+		TempUser user = new TempUser();
 		
 		group.setName("");
 		group.setDescription("");

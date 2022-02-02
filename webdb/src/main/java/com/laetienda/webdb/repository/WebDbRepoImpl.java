@@ -5,7 +5,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 
 import com.laetienda.lib.http.HttpClientException;
-import com.laetienda.model.api.ApiRepository;
+import com.laetienda.model.api.UserApi;
 import com.laetienda.model.webdb.DbRow;
 import com.laetienda.model.webdb.Usuario;
 
@@ -15,7 +15,7 @@ public class WebDbRepoImpl implements WebDbRepository {
 
 	private EntityManagerFactory emf;
 	private Usuario visitor;
-	private ApiRepository api;
+	private UserApi api;
 	
 	public WebDbRepoImpl() {
 		

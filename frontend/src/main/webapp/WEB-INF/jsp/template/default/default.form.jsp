@@ -3,7 +3,7 @@
     pageEncoding="UTF-8"%>
 <%@ page isELIgnored="false" %>
 
-<jsp:useBean id="form" type="com.laetienda.lib.form.FormRepository" class="com.laetienda.lib.form.FormRepoImpl" >
+<jsp:useBean id="form" type="com.laetienda.frontend.repository.FormRepository" class="com.laetienda.frontend.repository.FormRepoImpl" >
 </jsp:useBean>
 
 <jsp:useBean id="dbrow" type="com.laetienda.lib.form.Form">

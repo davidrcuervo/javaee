@@ -24,6 +24,7 @@ import com.laetienda.model.webdb.Group;
 import com.laetienda.webdb.repository.GroupRepoImpl;
 import com.laetienda.webdb.repository.GroupRepository;
 
+@Deprecated
 public class GroupFilter implements Filter {
 	final static private Logger log = LogManager.getLogger(GroupFilter.class);
 

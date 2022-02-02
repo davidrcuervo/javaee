@@ -3,18 +3,18 @@ package com.laetienda.frontend.repository;
 import com.laetienda.lib.model.Input;
 
 @Deprecated
-public class InputRepository {
+public class InputRepositoryDeprecated {
 	
 	private Input input;
 	
-	public InputRepository(String name, String label, String type) {
+	public InputRepositoryDeprecated(String name, String label, String type) {
 		input = new Input();
 		setName(name);
 		setLabel(label);
 		setType(type);
 	}
 	
-	public InputRepository(
+	public InputRepositoryDeprecated(
 			String name, String label, String type,
 			String placeholder, String glyphicon, boolean value
 			) {

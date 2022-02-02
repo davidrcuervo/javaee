@@ -44,7 +44,7 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 	private EntityManagerFactory emf;
 	private Settings settings;
 	private String visitor;
-	private Integer userId;
+//	private Integer userId;
 	private DirContext ctx;
 	
 	public UsuarioJndiRepoImpl() {
@@ -72,15 +72,15 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		EntityManager em = emf.createEntityManager();
 		try {
 			if(username2 == null) {
-				userId = null;
+//				userId = null;
 			}else {
 				Usuario u = em.createNamedQuery("Usuario.findByUsername", Usuario.class).setParameter("username", this.visitor).getSingleResult();
-				this.userId = u.getUid();
+//				this.userId = u.getUid();
 			}
 		}catch(PersistenceException e) {
 			log.warn("Failed to find user in database. $username: {}. $Exception: {} -> $message: {}", username2, e.getClass().getCanonicalName(), e.getMessage());
 			this.visitor = null;
-			this.userId = null;
+//			this.userId = null;
 		}finally {
 			em.close();
 		}
@@ -132,8 +132,41 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 
 	@Override
 	public List<Usuario> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		return findUsers("findAll");
+	}
+	
+	@Override
+	public List<Usuario> findFriends() {
+		return findUsers("findFriends");
+	}
+	
+	private List<Usuario> findUsers(String token){
+		List<Usuario> result = new ArrayList<Usuario>();
+		EntityManager em = emf.createEntityManager();
+		
+		try {
+			
+			if(token.equals("findFriends")) {
+				result = em.createNamedQuery("Usuario.findByUsername", Usuario.class).setParameter("visitor", this.visitor).getSingleResult().getFriends();
+			}else if(token.equals("findAll")) {
+				result = em.createNamedQuery("Usuario.findall", Usuario.class).getResultList();
+			}
+			
+			for(Usuario u : result) {
+				Usuario uldap = this.findLdapUserByUsername(u.getUsername());
+				u.setGivenname(uldap.getGivenname());
+				u.setMail(uldap.getMail());
+				u.setSurname(uldap.getSurname());
+			}
+			
+		}catch(NullPointerException | PersistenceException e) {
+			log.debug(e.getMessage(), e);
+			
+		}finally {
+			em.close();
+		}
+		
+		return result;
 	}
 
 
@@ -417,9 +450,10 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 		String username = result.getUsername();
 		boolean flag = false;
 		
-		if(result.getUsername().equals(this.visitor) || result.getFriendIds().contains(this.userId)) {
+		if(result.getUsername().equals(this.visitor) || result.getFriends().contains(result)) {
 			log.debug("User, {}, has priveleges to read user: {}", this.visitor, username);
 			flag = true;
+			
 		}else {
 			log.info("User, {}, does not have priveleges to get user: {}", this.visitor, username);
 			flag = false;
@@ -702,11 +736,11 @@ public class UsuarioJndiRepoImpl implements UsuarioRepository {
 			}
 		}catch(NamingException e) {
 			//TODO 
-			log.debug(e);
+			log.debug(e.getMessage(), e);
 			result = null;
 		}catch(IllegalArgumentException | IllegalAccessException | ClassCastException e) {
 			//TODO
-			log.debug(e);
+			log.debug(e.getMessage(), e);
 			result = null;
 		}
   		

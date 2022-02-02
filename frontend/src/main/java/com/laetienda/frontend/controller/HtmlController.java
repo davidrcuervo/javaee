@@ -28,7 +28,7 @@ import com.laetienda.lib.http.HttpClientException;
 import com.laetienda.lib.mistake.Mistake;
 import com.laetienda.lib.mistake.MistakeRepoImpl;
 import com.laetienda.lib.tomcat.WebEngine;
-import com.laetienda.model.api.ApiRepoImpl;
+import com.laetienda.model.api.UserApi;
 import com.laetienda.model.api.ApiRepository;
 import com.laetienda.model.webdb.ThankyouPage;
 import com.laetienda.model.webdb.Usuario;
@@ -78,7 +78,7 @@ public class HtmlController extends HttpServlet {
 		WebEngine web = (WebEngine)request.getAttribute("web");
 		
 		try {
-			ApiRepository api = new ApiRepoImpl();
+			ApiRepository api = new UserApi();
 			FormAction action = FormAction.valueOf(request.getParameter("action"));
 			Method mtd = null;
 			Form entity = parseParameters(request);

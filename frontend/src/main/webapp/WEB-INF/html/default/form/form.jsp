@@ -4,7 +4,7 @@
 <%@ page isELIgnored="false" %>
 
 
-<jsp:useBean id="form" class="com.laetienda.lib.form.FormRepoImpl" type="com.laetienda.lib.form.FormRepository">
+<jsp:useBean id="form" class="com.laetienda.frontend.repository.FormRepoImpl" type="com.laetienda.frontend.repository.FormRepository">
 	<jsp:setProperty name="form" property="object" value="${param.classname}" />
 	<jsp:setProperty name="form" property="action" value="${param.accion }" />
 </jsp:useBean>

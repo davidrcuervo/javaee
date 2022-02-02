@@ -8,6 +8,7 @@ import com.laetienda.model.webdb.Usuario;
 public interface UsuarioRepository {
 	
 	public List<Usuario> findAll();
+	public List<Usuario> findFriends();
 	public boolean userExist(String username);
 	public Usuario findByUsername(String username);
 	public Usuario findByEmail(String email);

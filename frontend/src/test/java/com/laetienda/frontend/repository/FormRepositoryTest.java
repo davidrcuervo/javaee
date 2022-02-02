@@ -1,4 +1,4 @@
-package com.laetienda.webdb.repository;
+package com.laetienda.frontend.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,8 +7,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.laetienda.lib.form.FormRepoImpl;
-import com.laetienda.lib.form.FormRepository;
+import com.laetienda.frontend.repository.FormRepoImpl;
+import com.laetienda.frontend.repository.FormRepository;
 import com.laetienda.lib.form.InputRepository;
 import com.laetienda.model.webdb.Group;
 

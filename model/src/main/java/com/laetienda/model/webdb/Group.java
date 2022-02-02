@@ -69,13 +69,13 @@ public class Group implements Serializable, WebDb, Form {
 	@ElementCollection
 	@CollectionTable(name="group_owners")
 	@ValidateParameters(name="owners", nullable=false)
-	@InputForm(type = InputType.SELECT_MULTIPLE, options="groupOwnersOptions", id="groupOwnersInput", label = "Owners", name = "owners", placeholder = "Select the usernames of owners of the group")
+	@InputForm(type = InputType.SELECT_MULTIPLE, options="com.laetienda.model.api.WebdbApi.getGroupFormOwnerOptions(name)", id="groupOwnersInput", label = "Owners", name = "owners", placeholder = "Select the usernames of owners of the group")
 	private List<Usuario> owners;
 	
 	@ElementCollection
 	@CollectionTable(name="group_members")
 	@ValidateParameters(name="members", nullable=false)
-	@InputForm(type = InputType.SELECT_MULTIPLE, options="groupMemberOptions", id="groupMemberInput", label="Members", name="members", placeholder = "Select the members of the group")
+	@InputForm(type = InputType.SELECT_MULTIPLE, options="com.laetienda.model.api.WebdbApi.getGroupFormOwnerOptions(name)", id="groupMemberInput", label="Members", name="members", placeholder = "Select the members of the group")
 	private List<Usuario> members;
 	
 	public Group() {
